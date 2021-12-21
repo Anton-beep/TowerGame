@@ -1,16 +1,24 @@
-# This is a sample Python script.
+import pygame
+import configparser
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+CONFIG = configparser.ConfigParser()
+CONFIG.read('config.cfg')
+
+CLOCK = pygame.time.Clock()
+SIZE = list(map(int, [CONFIG['window_size']['WindowWidth'],
+                      CONFIG['window_size']['WindowHeight']]))
+MAIN_SCREEN = pygame.display.set_mode(SIZE)
+
+SPRITES_GROUPS = {
+    'ENTITIES': pygame.sprite.Group(),
+    'STATIC': pygame.sprite.Group()
+}
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def main():
+    pygame.init()
+    pygame.display.set_caption('TowerGame')
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    main()
