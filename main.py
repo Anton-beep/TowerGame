@@ -77,7 +77,7 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 flag = False
                 for entity in SPRITES_GROUPS['ENTITIES']:
-                    if entity.rect.collidepoint(event.pos):
+                    if entity.rect.collidepoint(event.pos): # hhh
                         if entity.get_damage(Entity, 10000000):
                             entity.kill()
                         flag = True
