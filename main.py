@@ -20,28 +20,29 @@ def start_screen():
     pass
 
 
-def Player_tower(coords):
+def player_tower(coords):
     tower = Tower(coords, PLAYER)
     SPRITES_GROUPS['ENTITIES'].add(tower)
     ENTITIES_LIST.append(tower)
 
 
-def Bot_tower(coords):
+def bot_tower(coords):
     tower = Tower(coords, BOT_ENEMY)
     SPRITES_GROUPS['ENTITIES'].add(tower)
     ENTITIES_LIST.append(tower)
 
 
-def wall(coords):
-    SPRITES_GROUPS['STATIC'].add(Wall(coords))
+def spawn_point(coords):
+    SPAWN_POINTS.append(coords)
 
 
 # sprites dict in level.txt files
 SPRITES_LEVEL = {
     '.': None,
-    'P': Player_tower,
-    'B': Bot_tower,
-    '#': Wall
+    'P': player_tower,
+    'B': bot_tower,
+    '#': Wall,
+    '~': spawn_point
 }
 
 
@@ -61,6 +62,27 @@ def load_level(path):
                 SPRITES_LEVEL[el[1]](((el[0] + 1) * cell_size, (row[0] + 1) * cell_size))
 
 
+def point_collide(coords: tuple, *groups):
+    ans = list()
+    for el in map(lambda y: list(filter(lambda x: x.rect.collidepoint(coords), y)), groups):
+        ans += el
+    return ans
+
+
+def spawn_entity(ent, player: Player) -> bool:
+    for coords in SPAWN_POINTS:
+        flag = True
+        for group in SPRITES_GROUPS.values():
+            if pygame.sprite.spritecollide(ent(coords, player, False), group, False):
+                flag = False
+                break
+        if flag:
+            ent(coords, player)
+            return True
+    return False
+
+
+
 def main():
     pygame.init()
     pygame.display.set_caption('TowerGame')
@@ -75,14 +97,13 @@ def main():
             if event.type == pygame.QUIT:
                 terminate()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                flag = False
-                for entity in SPRITES_GROUPS['ENTITIES']:
-                    if entity.rect.collidepoint(event.pos): # hhh
-                        if entity.get_damage(Entity, 10000000):
-                            entity.kill()
-                        flag = True
-                if not flag:
-                    Warriors(event.pos, PLAYER)
+                if pygame.mouse.get_pressed(3)[0]:
+                    for entity in point_collide(event.pos, SPRITES_GROUPS['ENTITIES']):
+                        entity.get_damage(Entity, 100000)
+            if event.type == pygame.KEYDOWN:
+                if pygame.key.get_pressed()[pygame.K_SPACE]:
+                    print('bib')
+                    spawn_entity(Warriors, PLAYER)
 
         MAIN_SCREEN.fill(pygame.Color('black'))
         for group in SPRITES_GROUPS.values():

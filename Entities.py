@@ -7,8 +7,11 @@ from itertools import cycle
 
 
 class Entity(pygame.sprite.Sprite):
-    def __init__(self, group, hp, max_hp):
-        super().__init__(group)
+    def __init__(self, hp, max_hp, group=None):
+        if group is not None:
+            super().__init__(group)
+        else:
+            super().__init__()
         self.hp = hp
         self.max_hp = max_hp
 
@@ -19,16 +22,21 @@ class Entity(pygame.sprite.Sprite):
     def get_damage(self, entity, damage: int) -> bool:
         """Decreases hp for entity, if self.hp - damage <= 0 then returns True, which means dead"""
         self.hp -= damage
-        return True if self.hp <= 0 else False
+        if self.hp <= 0:
+            self.kill()
 
     def update(self):
         pass
 
 
 class Warriors(Entity):
-    def __init__(self, spawn_coords: tuple, player: Player):
-        super().__init__(SPRITES_GROUPS['ENTITIES'], CONFIG.getint('warriors', 'HP'),
-                         CONFIG.getint('warriors', 'HPMax'))
+    def __init__(self, spawn_coords: tuple, player: Player, add_to_group=True):
+        if add_to_group:
+            super().__init__(CONFIG.getint('warriors', 'HP'),
+                             CONFIG.getint('warriors', 'HPMax'), SPRITES_GROUPS['ENTITIES'])
+        else:
+            super().__init__(CONFIG.getint('warriors', 'HP'),
+                             CONFIG.getint('warriors', 'HPMax'))
         self.moving_images = cycle(load_images(CONFIG['warriors']['Moving_images']))
         self.attack_images = cycle(load_images(CONFIG['warriors']['Attacking_images']))
         self.standing_image = cycle(load_images(CONFIG['warriors']['Standing_images']))
@@ -70,9 +78,13 @@ class Warriors(Entity):
 
 
 class Tower(Entity):
-    def __init__(self, spawn_coords: tuple, player: Player):
-        super().__init__(SPRITES_GROUPS['ENTITIES'], CONFIG.getint('tower', 'HP'),
-                         CONFIG.getint('tower', 'HPMax'))
+    def __init__(self, spawn_coords: tuple, player: Player, add_to_group=True):
+        if add_to_group:
+            super().__init__(CONFIG.getint('tower', 'HP'),
+                             CONFIG.getint('tower', 'HPMax'), SPRITES_GROUPS['ENTITIES'])
+        else:
+            super().__init__(CONFIG.getint('tower', 'HP'),
+                             CONFIG.getint('tower', 'HPMax'))
         self.standing_image = load_image('data/tower/standing.png')
 
         self.image = self.standing_image

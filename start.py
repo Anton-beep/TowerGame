@@ -15,3 +15,4 @@ SPRITES_GROUPS = {
 }
 
 ENTITIES_LIST = list()
+SPAWN_POINTS = list()
