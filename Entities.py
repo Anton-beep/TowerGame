@@ -1,9 +1,10 @@
 import pygame
-
+from math import copysign
 from start import SPRITES_GROUPS, CONFIG
 from Players import Player
 from Sprites import load_images, load_image
 from itertools import cycle
+from math import sqrt
 
 
 class Entity(pygame.sprite.Sprite):
@@ -50,17 +51,24 @@ class Warriors(Entity):
         self.strength = CONFIG.getint('warriors', 'Strength')
         self.distance_to_attack = CONFIG.getint('warriors', 'DistanceToAttack')
 
-    def get_damage(self, entity: Entity, damage: int) -> bool:
+    def get_damage(self, ent: Entity, damage: int) -> bool:
         """Gets some damage and if self.target is None then self.target is Entity
         from which the damage was taken"""
+
         if self.target is None:
-            self.target = Entity
-        return super().get_damage(entity, damage)
+            self.target = ent
+        return super().get_damage(ent, damage)
 
     def move_to_target(self, speed):
         """moves self to target"""
         if type(self.target) == Entity:
-            pass
+            while self.target.rect.x != self.rect.x:
+                delta_x = self.target.rect.x - self.rect.x
+                delta_y = self.target.rect.y - self.rect.y
+                koaf_x = 0 if delta_x == 0 else delta_x > 1 if delta_x > 0 else -1
+                koaf_y = 0 if delta_y == 0 else delta_y > 1 if delta_y > 0 else -1
+                self.rect.move(koaf_x * speed, koaf_y * speed)
+                SPRITES_GROUPS['ENTITIES'].draw()
         elif type(self.target) == tuple:
             pass
 
@@ -95,6 +103,5 @@ class Tower(Entity):
 
     def update(self):
         self.image = next(self.standing_image)
-
 
 # Warriors(Player('red')).get_damage(Warriors(Player('blue')), 100)
