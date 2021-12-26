@@ -1,10 +1,11 @@
 import pygame
-from math import copysign
+
 from start import SPRITES_GROUPS, CONFIG
 from Players import Player
 from Sprites import load_images, load_image
 from itertools import cycle
-from math import sqrt
+from random import randint
+from math import copysign
 
 
 class Entity(pygame.sprite.Sprite):
@@ -25,20 +26,61 @@ class Entity(pygame.sprite.Sprite):
         self.hp -= damage
         if self.hp <= 0:
             self.kill()
+            return True
+        return False
 
     def update(self):
         pass
 
 
-class Warriors(Entity):
+class Moving_entity(Entity):
+    def __init__(self, moving_images: cycle, player: Player, hp, max_hp, group=None):
+        super().__init__(hp, max_hp, group)
+
+        self.player = player
+        self.moving_images = moving_images
+
+        self.image = next(moving_images)
+        self.target = None
+
+    def set_target(self, new):
+        self.target = new
+
+    def move_to_target(self):
+        """moves self to target
+        :returns True if moved else False"""
+        self.image = next(self.moving_images)
+
+        coords = self.target.rect.center
+        delta_x = self.rect.center[0] - coords[0]
+        delta_y = self.rect.center[1] - coords[1]
+        if delta_x == 0 and delta_y == 0:
+            return False
+        if delta_y != 0 and abs(delta_x / delta_y) > 1:
+            delta = (copysign(1, -delta_x), 0)
+        else:
+            delta = (0, copysign(1, -delta_y))
+        self.rect = self.rect.move(delta)
+        for group in SPRITES_GROUPS.values():
+            if not pygame.sprite.spritecollide(self, group, False) in [[], [self]]:
+                self.rect = self.rect.move(*tuple(map(lambda x: -x, delta)))
+                return False
+        return True
+
+
+class Warriors(Moving_entity):
     def __init__(self, spawn_coords: tuple, player: Player, add_to_group=True):
         if add_to_group:
-            super().__init__(CONFIG.getint('warriors', 'HP'),
+            super().__init__(cycle(load_images(CONFIG['warriors']['Moving_images'])),
+                             player,
+                             CONFIG.getint('warriors', 'HP'),
                              CONFIG.getint('warriors', 'HPMax'), SPRITES_GROUPS['ENTITIES'])
         else:
-            super().__init__(CONFIG.getint('warriors', 'HP'),
+            super().__init__(cycle(load_images(CONFIG['warriors']['Moving_images'])),
+                             player,
+                             CONFIG.getint('warriors', 'HP'),
                              CONFIG.getint('warriors', 'HPMax'))
-        self.moving_images = cycle(load_images(CONFIG['warriors']['Moving_images']))
+
         self.attack_images = cycle(load_images(CONFIG['warriors']['Attacking_images']))
         self.standing_image = cycle(load_images(CONFIG['warriors']['Standing_images']))
 
@@ -51,38 +93,30 @@ class Warriors(Entity):
         self.strength = CONFIG.getint('warriors', 'Strength')
         self.distance_to_attack = CONFIG.getint('warriors', 'DistanceToAttack')
 
-    def get_damage(self, ent: Entity, damage: int) -> bool:
+    def get_damage(self, entity: Entity, damage: int) -> bool:
         """Gets some damage and if self.target is None then self.target is Entity
         from which the damage was taken"""
-
         if self.target is None:
-            self.target = ent
-        return super().get_damage(ent, damage)
-
-    def move_to_target(self, speed):
-        """moves self to target"""
-        if type(self.target) == Entity:
-            while self.target.rect.x != self.rect.x:
-                delta_x = self.target.rect.x - self.rect.x
-                delta_y = self.target.rect.y - self.rect.y
-                koaf_x = 0 if delta_x == 0 else delta_x > 1 if delta_x > 0 else -1
-                koaf_y = 0 if delta_y == 0 else delta_y > 1 if delta_y > 0 else -1
-                self.rect.move(koaf_x * speed, koaf_y * speed)
-                SPRITES_GROUPS['ENTITIES'].draw()
-        elif type(self.target) == tuple:
-            pass
+            self.target = entity
+        return super().get_damage(entity, damage)
 
     def attack_target(self):
         """attack target and animation"""
-        self.target.get_damage(self, self.strength)
+        self.image = next(self.attack_images)
 
-    def set_target(self, target):
-        self.target = target
+        return self.target.get_damage(self, self.strength + randint(-5, 5))
 
     def update(self):
         """moves self to target or attack target, check attacking with collide"""
         # can use next(<itertools.cycle>) for animation (check itertools.cycle)
-        pass
+        if self.target.hp <= 0:
+            self.target = None
+        if self.target is not None:
+            if not self.move_to_target():
+                if self.attack_target():
+                    self.target = None
+        else:
+            self.image = next(self.standing_image)
 
 
 class Tower(Entity):
@@ -100,8 +134,5 @@ class Tower(Entity):
         self.rect.center = spawn_coords
 
         self.player = player
-
-    def update(self):
-        self.image = next(self.standing_image)
 
 # Warriors(Player('red')).get_damage(Warriors(Player('blue')), 100)

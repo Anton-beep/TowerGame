@@ -15,4 +15,6 @@ SPRITES_GROUPS = {
 }
 
 ENTITIES_LIST = list()
-SPAWN_POINTS = list()
+
+BOT_TOWER = None
+PLAYER_TOWER = None
