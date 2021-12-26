@@ -11,7 +11,8 @@ MAIN_SCREEN = pygame.display.set_mode(SIZE)
 
 SPRITES_GROUPS = {
     'ENTITIES': pygame.sprite.Group(),
-    'STATIC': pygame.sprite.Group()
+    'STATIC': pygame.sprite.Group(),
+    'SPELLS': pygame.sprite.Group()
 }
 
 ENTITIES_LIST = list()

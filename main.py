@@ -2,6 +2,7 @@ import sys
 
 import pygame
 import configparser
+from Spells import *
 from start import *
 from Players import Player, Bot
 from Entities import *
@@ -89,6 +90,7 @@ def spawn_entity(ent, player: Player) -> bool:
 
 
 def main():
+    yet_chose = False
     pygame.init()
     pygame.display.set_caption('TowerGame')
 
@@ -103,15 +105,21 @@ def main():
         spawn_entity(Warriors, BOT_ENEMY)
         list(SPRITES_GROUPS['ENTITIES'])[-2].target = list(SPRITES_GROUPS['ENTITIES'])[-1]
         list(SPRITES_GROUPS['ENTITIES'])[-1].target = list(SPRITES_GROUPS['ENTITIES'])[-2]
-
+    light = Lightning_spell(SPRITES_GROUPS['SPELLS'])
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if pygame.mouse.get_pressed(3)[0]:
-                    for entity in point_collide(event.pos, SPRITES_GROUPS['ENTITIES']):
-                        entity.get_damage(Entity, 100000)
+                    if yet_chose is False:
+                        for spell in point_collide(event.pos, SPRITES_GROUPS['SPELLS']):
+                            spell.select_spell(yet_chose)
+                            yet_chose = True
+                    else:
+                        for entity in point_collide(event.pos, SPRITES_GROUPS['ENTITIES']):
+                            entity.get_damage(Entity, 10000)
+                            yet_chose = True
         for ent in SPRITES_GROUPS['ENTITIES']:
             if type(ent) == Warriors:
                 if ent.player == PLAYER and ent.target is None:
