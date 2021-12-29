@@ -3,6 +3,7 @@ import sys
 
 import pygame.image
 from start import SPRITES_GROUPS, CONFIG
+from boards import Cell, Board
 
 
 def load_images(dir):
@@ -22,12 +23,16 @@ def load_image(path):
     return pygame.image.load(path)
 
 
-class Wall(pygame.sprite.Sprite):
-    def __init__(self, coords):
+class Wall(pygame.sprite.Sprite, Cell):
+    def __init__(self, coords, board: Board):
         super().__init__(SPRITES_GROUPS['STATIC'])
         self.image = load_image(CONFIG['wall']['wall_image'])
         self.rect = self.image.get_rect()
         self.rect.center = coords
+        board.board[coords[0] // board.cell_size][coords[1] // board.cell_size] = self
+
+    def get_int(self):
+        return -1
 
     def update(self):
         pass
