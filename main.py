@@ -97,12 +97,8 @@ def main():
     fps = CONFIG.getint('FPS', 'FPS')
 
     load_level('data/levels/level1.txt')
-
-    for _ in range(3):
-        spawn_entity(Warriors, PLAYER)
-        spawn_entity(Warriors, BOT_ENEMY)
-        list(SPRITES_GROUPS['ENTITIES'])[-2].target = list(SPRITES_GROUPS['ENTITIES'])[-1]
-        list(SPRITES_GROUPS['ENTITIES'])[-1].target = list(SPRITES_GROUPS['ENTITIES'])[-2]
+    spawn_entity(Warriors, PLAYER)
+    list(SPRITES_GROUPS['ENTITIES'])[-1].set_target((400, 500))
 
     while True:
         for event in pygame.event.get():
@@ -112,20 +108,7 @@ def main():
                 if pygame.mouse.get_pressed(3)[0]:
                     for entity in point_collide(event.pos, SPRITES_GROUPS['ENTITIES']):
                         entity.get_damage(Entity, 100000)
-        for ent in SPRITES_GROUPS['ENTITIES']:
-            if type(ent) == Warriors:
-                if ent.player == PLAYER and ent.target is None:
-                    ent.set_target(BOT_TOWER)
-                elif ent.player == BOT_ENEMY and ent.target is None:
-                    ent.set_target(PLAYER_TOWER)
 
-        if BOT_TOWER.hp <= 0:
-            print('Player wins')
-            input()
-        elif PLAYER_TOWER.hp <= 0:
-            print('BOT wins')
-            input()
-        
         MAIN_SCREEN.fill(pygame.Color('black'))
         for ent in SPRITES_GROUPS['ENTITIES']:
             ent.update()

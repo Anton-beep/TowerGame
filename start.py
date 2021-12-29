@@ -14,7 +14,7 @@ SPRITES_GROUPS = {
     'STATIC': pygame.sprite.Group()
 }
 
-ENTITIES_LIST = list()
+MAP_FOR_MOVING = None
 
 BOT_TOWER = None
 PLAYER_TOWER = None
