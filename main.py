@@ -7,6 +7,7 @@ from start import *
 from Players import Player, Bot
 from Entities import *
 from Sprites import *
+import time
 
 PLAYER = Player('blue')
 BOT_ENEMY = Bot('red')
@@ -91,6 +92,7 @@ def spawn_entity(ent, player: Player) -> bool:
 
 def main():
     yet_chose = False
+    chosen_spell = ''
     pygame.init()
     pygame.display.set_caption('TowerGame')
 
@@ -106,7 +108,11 @@ def main():
         list(SPRITES_GROUPS['ENTITIES'])[-2].target = list(SPRITES_GROUPS['ENTITIES'])[-1]
         list(SPRITES_GROUPS['ENTITIES'])[-1].target = list(SPRITES_GROUPS['ENTITIES'])[-2]
     light = Lightning_spell(SPRITES_GROUPS['SPELLS'])
+
     while True:
+        for spell in SPRITES_GROUPS['SPELLS']:
+            spell.update(time.time())
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -114,12 +120,18 @@ def main():
                 if pygame.mouse.get_pressed(3)[0]:
                     if yet_chose is False:
                         for spell in point_collide(event.pos, SPRITES_GROUPS['SPELLS']):
-                            spell.select_spell(yet_chose)
+                            a = spell.select_spell(yet_chose)
                             yet_chose = True
+                            chosen_spell = 'light' if a == 1 else ''
                     else:
-                        for entity in point_collide(event.pos, SPRITES_GROUPS['ENTITIES']):
-                            entity.get_damage(Entity, 10000)
-                            yet_chose = True
+                        print(chosen_spell, light.return_status())
+                        if chosen_spell == 'light' and light.return_status() is True:
+                            for entity in point_collide(event.pos, SPRITES_GROUPS['ENTITIES']):
+                                lightning_damage = light.damage_light(time.time())
+                                print(lightning_damage)
+                                entity.get_damage(Entity, lightning_damage)
+                                yet_chose = False
+
         for ent in SPRITES_GROUPS['ENTITIES']:
             if type(ent) == Warriors:
                 if ent.player == PLAYER and ent.target is None:
@@ -133,7 +145,6 @@ def main():
         elif PLAYER_TOWER.hp <= 0:
             print('BOT wins')
             input()
-        
         MAIN_SCREEN.fill(pygame.Color('black'))
         for ent in SPRITES_GROUPS['ENTITIES']:
             ent.update()
