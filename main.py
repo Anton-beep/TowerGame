@@ -107,8 +107,8 @@ def main():
         spawn_entity(Warriors, BOT_ENEMY)
         list(SPRITES_GROUPS['ENTITIES'])[-2].target = list(SPRITES_GROUPS['ENTITIES'])[-1]
         list(SPRITES_GROUPS['ENTITIES'])[-1].target = list(SPRITES_GROUPS['ENTITIES'])[-2]
+    poison = Poison_spell(SPRITES_GROUPS['SPELLS'])
     light = Lightning_spell(SPRITES_GROUPS['SPELLS'])
-
     while True:
         for spell in SPRITES_GROUPS['SPELLS']:
             spell.update(time.time())
@@ -122,15 +122,15 @@ def main():
                         for spell in point_collide(event.pos, SPRITES_GROUPS['SPELLS']):
                             a = spell.select_spell(yet_chose)
                             yet_chose = True
-                            chosen_spell = 'light' if a == 1 else ''
+                            chosen_spell = 'light' if a == 1 else 'poison' if a == 2 else ''
                     else:
-                        print(chosen_spell, light.return_status())
                         if chosen_spell == 'light' and light.return_status() is True:
                             for entity in point_collide(event.pos, SPRITES_GROUPS['ENTITIES']):
                                 lightning_damage = light.damage_light(time.time())
-                                print(lightning_damage)
                                 entity.get_damage(Entity, lightning_damage)
                                 yet_chose = False
+                        elif chosen_spell == 'poison' and poison.return_status() is True:
+                            poison.damage_poison(time.time(), event.pos)
 
         for ent in SPRITES_GROUPS['ENTITIES']:
             if type(ent) == Warriors:
