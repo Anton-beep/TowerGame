@@ -100,9 +100,10 @@ class Moving_entity(Entity):
                 self.move((0, copysign(1, delta_y)))
             else:
                 self.move((copysign(1, delta_x), 0))
-            print(list(map(lambda x: x // self.board.cell_size, self.rect.center)))
             if list(map(lambda x: x // self.board.cell_size, self.rect.center)) == self.checkpoint:
                 self.checkpoint = None
+        self.image = pygame.transform.rotate(next(self.moving_images), 90 * self.looking_at)
+        return True
 
 
 class Warriors(Moving_entity):
@@ -145,7 +146,19 @@ class Warriors(Moving_entity):
         return self.target.get_damage(self, self.strength)
 
     def update(self):
-        self.move_to_target()
+        if self.target is not None:
+            if type(self.target) == tuple:
+                if not self.move_to_target():
+                    if self.rect.center == self.target:
+                        self.target = None
+            else:
+                if self.get_intersection(self.target, self.distance_to_attack):
+                    if self.attack_target():
+                        self.target = None
+                else:
+                    self.move_to_target()
+        else:
+            self.image = next(self.standing_image)
 
 
 class Tower(Entity):
