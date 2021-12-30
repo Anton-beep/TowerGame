@@ -1,7 +1,7 @@
 import pygame
 from start import *
 from boards import Cell, Board
-from Sprites import load_images, load_image
+from Sprites import *
 from itertools import cycle
 from Players import Player
 from math import copysign
@@ -35,6 +35,10 @@ class Entity(pygame.sprite.Sprite):
 
     def get_int(self):
         return 0
+
+    def get_intersection(self, other, dist) -> bool:
+        """Checks if other.rect intersects with self.rect at the dist"""
+        return get_intersection_two_rects(self.rect, other.rect, dist)
 
 
 class Moving_entity(Entity):
