@@ -8,11 +8,15 @@ CLOCK = pygame.time.Clock()
 SIZE = list(map(int, [CONFIG['window_size']['WindowWidth'],
                       CONFIG['window_size']['WindowHeight']]))
 MAIN_SCREEN = pygame.display.set_mode(SIZE)
+FORWARD_SCREEN = pygame.Surface(SIZE)
 
 SPRITES_GROUPS = {
     'ENTITIES': pygame.sprite.Group(),
     'STATIC': pygame.sprite.Group(),
     'SPELLS': pygame.sprite.Group(),
+}
+
+CIRCLE_SPRITES_GROUPS = {
     'POISON_CIRCLE': pygame.sprite.Group(),
     'HEAL_CIRCLE': pygame.sprite.Group()
 }

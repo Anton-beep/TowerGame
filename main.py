@@ -101,7 +101,6 @@ def main():
     fps = CONFIG.getint('FPS', 'FPS')
 
     load_level('data/levels/level1.txt')
-
     for _ in range(3):
         spawn_entity(Warriors, PLAYER)
         spawn_entity(Warriors, BOT_ENEMY)
@@ -131,6 +130,7 @@ def main():
                                 yet_chose = False
                         elif chosen_spell == 'poison' and poison.return_status() is True:
                             poison.damage_poison(time.time(), event.pos)
+                            yet_chose = False
 
         for ent in SPRITES_GROUPS['ENTITIES']:
             if type(ent) == Warriors:
@@ -146,11 +146,16 @@ def main():
             print('BOT wins')
             input()
         MAIN_SCREEN.fill(pygame.Color('black'))
+        FORWARD_SCREEN.fill(pygame.Color('black'))
+
+        FORWARD_SCREEN.set_colorkey((0, 0, 0))
         for ent in SPRITES_GROUPS['ENTITIES']:
             ent.update()
         for group in SPRITES_GROUPS.values():
+            group.draw(FORWARD_SCREEN)
+        for group in CIRCLE_SPRITES_GROUPS.values():
             group.draw(MAIN_SCREEN)
-
+        MAIN_SCREEN.blit(FORWARD_SCREEN, (0, 0))
         CLOCK.tick(fps)
         pygame.display.flip()
 
