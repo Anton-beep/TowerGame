@@ -7,19 +7,17 @@ from pygame.sprite import Sprite
 
 from start import SPRITES_GROUPS, CONFIG
 from main import *
-from Sprites import load_image
 from Entities import *
 
 
 class spell_circle(pygame.sprite.Sprite):
-    def __init__(self, radius, coordinates: tuple, color, start_time, *group):
+    def __init__(self, radius, coordinates: tuple, color, timing, tick, start_time, *group):
         super().__init__(*group)
         self.radius = radius
         self.image = pygame.Surface((2 * radius, 2 * radius),
                                     pygame.SRCALPHA, 32)
-        self.poison_time = CONFIG.getint('poison', 'poison_time')
-        self.damage_tick = CONFIG.getint('poison', 'damage_tick')
-
+        self.time = timing
+        self.tick = tick
         self.start_time = start_time
         self.attack_time = start_time
 
@@ -27,12 +25,15 @@ class spell_circle(pygame.sprite.Sprite):
         self.rect = pygame.Rect(coordinates[0], coordinates[1], 2 * radius, 2 * radius)
         self.rect.center = coordinates
 
-    def draw(self, damage):
-        if time.time() - self.start_time >= self.poison_time:
+    def draw(self, hp, key):
+        if time.time() - self.start_time >= self.time:
             self.kill()
-        if time.time() - self.start_time >= self.damage_tick:
+        if time.time() - self.start_time >= self.tick:
             for entity in pygame.sprite.spritecollide(self, SPRITES_GROUPS['ENTITIES'], False):
-                entity.get_damage(Entity, damage)
+                if key == 'damage':
+                    entity.get_damage(Entity, hp)
+                elif key == 'heal':
+                    entity.get_hp(hp)
         pygame.draw.circle(self.image, pygame.Color(self.color),
                            (self.radius, self.radius), self.radius)
 
@@ -92,6 +93,9 @@ class Poison_spell(Spell):
         self.radius = CONFIG.getint('poison', 'radius')
         self.recharge_time = CONFIG.getint('poison', 'recharge')
 
+        self.poison_time = CONFIG.getint('poison', 'poison_time')
+        self.damage_tick = CONFIG.getint('poison', 'damage_tick')
+
         self.range_of_poison = []
 
         self.image = Poison_spell.icon
@@ -112,7 +116,8 @@ class Poison_spell(Spell):
         icon = load_image(CONFIG['poison']['Disable_icon'])
         self.image = icon
         self.range_of_poison.append(
-            spell_circle(self.radius, coordinates, 'green', self.start_time, CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']))
+            spell_circle(self.radius, coordinates, 'green', self.poison_time, self.damage_tick, self.start_time,
+                         CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']))
         self.status = False
 
     def update(self, now_time):
@@ -123,4 +128,51 @@ class Poison_spell(Spell):
             self.status = True
         else:
             for i in self.range_of_poison:
-                i.draw(self.damage)
+                i.draw(self.damage, 'damage')
+
+
+class Heal_spell(Spell):
+    icon = load_image(CONFIG['heal']['Icon_image'])
+
+    def __init__(self, *group):
+        super().__init__(*group)
+        self.heal = CONFIG.getint('heal', 'heal')
+        self.radius = CONFIG.getint('heal', 'radius')
+        self.recharge_time = CONFIG.getint('heal', 'recharge')
+
+        self.heal_time = CONFIG.getint('heal', 'heal_time')
+        self.heal_tick = CONFIG.getint('heal', 'heal_tick')
+
+        self.range_of_heal = []
+
+        self.image = Heal_spell.icon
+        self.rect = self.icon.get_rect()
+        self.rect.center = (100, 300)
+
+    def select_spell(self, choose):
+        if choose and self.status is True:
+            icon = load_image(CONFIG['heal']['Icon_image'])
+            self.image = icon
+        elif self.status is True:
+            icon = load_image(CONFIG['heal']['Active_icon'])
+            self.image = icon
+            return 3
+
+    def damage_poison(self, timing, coordinates):
+        self.start_time = timing
+        icon = load_image(CONFIG['heal']['Disable_icon'])
+        self.image = icon
+        self.range_of_heal.append(
+            spell_circle(self.radius, coordinates, 'yellow', self.heal_time, self.heal_tick, self.start_time,
+                         CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']))
+        self.status = False
+
+    def update(self, now_time):
+        if self.start_time is not None and now_time - self.start_time >= self.recharge_time:
+            self.start_time = None
+            icon = load_image(CONFIG['heal']['Icon_image'])
+            self.image = icon
+            self.status = True
+        else:
+            for i in self.range_of_heal:
+                i.draw(self.heal, 'heal')

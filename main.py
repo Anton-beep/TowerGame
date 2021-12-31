@@ -108,6 +108,7 @@ def main():
         list(SPRITES_GROUPS['ENTITIES'])[-1].target = list(SPRITES_GROUPS['ENTITIES'])[-2]
     poison = Poison_spell(SPRITES_GROUPS['SPELLS'])
     light = Lightning_spell(SPRITES_GROUPS['SPELLS'])
+    heal = Heal_spell(SPRITES_GROUPS['SPELLS'])
     while True:
         for spell in SPRITES_GROUPS['SPELLS']:
             spell.update(time.time())
@@ -121,7 +122,7 @@ def main():
                         for spell in point_collide(event.pos, SPRITES_GROUPS['SPELLS']):
                             a = spell.select_spell(yet_chose)
                             yet_chose = True
-                            chosen_spell = 'light' if a == 1 else 'poison' if a == 2 else ''
+                            chosen_spell = 'light' if a == 1 else 'poison' if a == 2 else 'heal'
                     else:
                         if chosen_spell == 'light' and light.return_status() is True:
                             for entity in point_collide(event.pos, SPRITES_GROUPS['ENTITIES']):
@@ -130,6 +131,9 @@ def main():
                                 yet_chose = False
                         elif chosen_spell == 'poison' and poison.return_status() is True:
                             poison.damage_poison(time.time(), event.pos)
+                            yet_chose = False
+                        elif chosen_spell == 'heal' and poison.return_status() is True:
+                            heal.damage_poison(time.time(), event.pos)
                             yet_chose = False
 
         for ent in SPRITES_GROUPS['ENTITIES']:
