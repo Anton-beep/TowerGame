@@ -108,7 +108,7 @@ def level_selection() -> str:
                 if button.click(pygame.mouse.get_pos()):
                     for group in SPRITES_GROUPS.values():
                         group.empty()
-                    playing_level('data/levels/' + button.text + '.txt')
+                    return 'data/levels/' + button.text + '.txt'
 
         MAIN_SCREEN.fill(pygame.Color('black'))
         for ent in SPRITES_GROUPS['ENTITIES']:
@@ -241,7 +241,7 @@ def main():
     pygame.display.set_caption('TowerGame')
 
     start_screen()
-    level_selection()
+    playing_level(level_selection())
 
 
 if __name__ == '__main__':
