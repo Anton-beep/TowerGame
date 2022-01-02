@@ -10,7 +10,8 @@ MAIN_SCREEN = pygame.display.set_mode(SIZE)
 
 SPRITES_GROUPS = {
     'ENTITIES': pygame.sprite.Group(),
-    'STATIC': pygame.sprite.Group()
+    'STATIC': pygame.sprite.Group(),
+    'BUTTONS': pygame.sprite.Group()
 }
 
 MAP_FOR_MOVING = None

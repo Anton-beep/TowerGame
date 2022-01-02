@@ -7,6 +7,7 @@ from start import *
 from Players import *
 from Entities import *
 from Sprites import *
+from Buttons import *
 
 MAIN_BOARD = Board((1, 1), 100, 100)
 
@@ -15,6 +16,8 @@ BOT_ENEMY = Bot('red')
 
 SPAWN_POINTS = {PLAYER: list(),
                 BOT_ENEMY: list()}
+
+FPS = CONFIG.getint('FPS', 'FPS')
 
 
 def terminate():
@@ -75,6 +78,35 @@ def start_screen():
     pass
 
 
+def level_selection() -> str:
+    """returns level path"""
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if pygame.mouse.get_pressed(3)[0]:
+                    for entity in point_collide(event.pos, SPRITES_GROUPS['ENTITIES']):
+                        entity.get_damage(Entity, 100000)
+
+        MAIN_SCREEN.fill(pygame.Color('black'))
+        for ent in SPRITES_GROUPS['ENTITIES']:
+            ent.update()
+        for group in SPRITES_GROUPS.values():
+            group.draw(MAIN_SCREEN)
+
+        CLOCK.tick(FPS)
+        pygame.display.flip()
+
+
+def playing_level(level_path):
+    pass
+
+
+def finish_screen():
+    pass
+
+
 def point_collide(coords: tuple, *groups):
     ans = list()
     for el in map(lambda y: list(filter(lambda x: x.rect.collidepoint(coords), y)), groups):
@@ -97,24 +129,21 @@ def spawn_entity(ent: type(Entity), player: Player):
 
 def main():
     pygame.init()
+    pygame.font.init()
     pygame.display.set_caption('TowerGame')
 
     start_screen()
 
     fps = CONFIG.getint('FPS', 'FPS')
 
-    load_level('data/levels/level1.txt')
-    spawn_entity(Warriors, PLAYER)
-    list(SPRITES_GROUPS['ENTITIES'])[-1].set_target(BOT_TOWER)
+    button = Level_button('bib', (100, 100))
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if pygame.mouse.get_pressed(3)[0]:
-                    for entity in point_collide(event.pos, SPRITES_GROUPS['ENTITIES']):
-                        entity.get_damage(Entity, 100000)
+                print(button.click(event.pos))
 
         MAIN_SCREEN.fill(pygame.Color('black'))
         for ent in SPRITES_GROUPS['ENTITIES']:
