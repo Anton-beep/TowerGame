@@ -1,4 +1,5 @@
 from start import *
+from pprint import pprint
 
 
 class Cell:
@@ -33,11 +34,28 @@ class Board:
         return (mouse_pos[0] - self.left) // self.cell_size, \
                (mouse_pos[1] - self.top) // self.cell_size
 
-    def get_int_board(self):
-        return list(map(lambda x: list(map(lambda y: y.get_int(), x)), self.board))
+    def get_int_board(self, exception_ent=None):
+        int_board = self.board.copy()
+        for i in enumerate(list(map(lambda x: x * self.cell_size, range(self.width)))):
+            for j in enumerate(list(map(lambda y: y * self.cell_size, range(self.height)))):
+                flag = True
+                for group in SPRITES_GROUPS.values():
+                    for el in group:
+                        if el.rect.collidepoint(i[1], j[1]) and el != exception_ent:
+                            flag = False
+                            int_board[i[0]][j[0]] = -1
+                if flag:
+                    int_board[i[0]][j[0]] = 0
+
+        return int_board
 
     def draw_map(self, start_coords, target_coords):
-        board_int_copy = self.get_int_board()
+        exception = None
+        for el in SPRITES_GROUPS['ENTITIES']:
+            if el.rect.collidepoint(list(map(lambda x: x * self.cell_size, target_coords))):
+                exception = el
+                break
+        board_int_copy = self.get_int_board(exception)
         board_int_copy[start_coords[0]][start_coords[1]] = 1
         flag = True
         while flag:

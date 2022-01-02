@@ -34,7 +34,7 @@ class Entity(pygame.sprite.Sprite):
         pass
 
     def get_int(self):
-        return 0
+        return -1
 
     def get_intersection(self, other, dist) -> bool:
         """Checks if other.rect intersects with self.rect at the dist"""
@@ -133,6 +133,10 @@ class Warriors(Moving_entity):
         self.player = player
         self.target = None
         self.strength = CONFIG.getint('warriors', 'Strength')
+        self.speed = CONFIG.getint('warriors', 'Speed')
+        self.speed_cooldown = cycle(range(self.speed + 1))
+        self.attack_speed = CONFIG.getint('warriors', 'CoolDownAttack')
+        self.attack_cooldown = cycle(range(self.attack_speed + 1))
         self.distance_to_attack = CONFIG.getint('warriors', 'DistanceToAttack')
 
     def get_damage(self, entity: Entity, damage: int) -> bool:
@@ -144,9 +148,16 @@ class Warriors(Moving_entity):
 
     def attack_target(self):
         """attack target and animation"""
-        self.image = next(self.attack_images)
+        if next(self.attack_cooldown) == self.attack_speed:
+            self.image = next(self.attack_images)
 
-        return self.target.get_damage(self, self.strength)
+            return self.target.get_damage(self, self.strength)
+        return False
+
+    def move_to_target(self):
+        if next(self.speed_cooldown) == self.speed:
+            return super().move_to_target()
+        return False
 
     def update(self):
         if self.target is not None:

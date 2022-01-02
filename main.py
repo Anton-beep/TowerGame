@@ -9,7 +9,7 @@ from Entities import *
 from Sprites import *
 from Buttons import *
 
-MAIN_BOARD = Board((1, 1), 100, 100)
+MAIN_BOARD = Board((1, 1), 50, 50)
 
 PLAYER = Player('blue')
 BOT_ENEMY = Bot('red')
@@ -20,7 +20,6 @@ SPAWN_POINTS = {PLAYER: list(),
 FPS = CONFIG.getint('FPS', 'FPS')
 
 AVAILABLE_ENTITIES = [Warriors]
-LEVEL_RECT = None
 
 
 def terminate():

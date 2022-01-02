@@ -18,3 +18,5 @@ MAP_FOR_MOVING = None
 
 BOT_TOWER = None
 PLAYER_TOWER = None
+
+LEVEL_RECT = None
