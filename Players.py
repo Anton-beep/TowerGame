@@ -7,8 +7,6 @@ class Player:
     def __init__(self, team):
         """team can be 'red' or 'blue'"""
         self.team = team
-        self.money = CONFIG.getint('player', 'MoneyStart')
-        self.money_max = CONFIG.getint('player', 'MoneyMax')
 
     def __hash__(self):
         return hash(self.team)
@@ -19,4 +17,6 @@ class Player:
 
 class Bot(Player):
     """Must be clever"""
-    pass
+    def update(self):
+        """do something"""
+        pass

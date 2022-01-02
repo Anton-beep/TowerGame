@@ -19,6 +19,9 @@ SPAWN_POINTS = {PLAYER: list(),
 
 FPS = CONFIG.getint('FPS', 'FPS')
 
+AVAILABLE_ENTITIES = [Warriors]
+LEVEL_RECT = None
+
 
 def terminate():
     pygame.quit()
@@ -56,6 +59,7 @@ SPRITES_LEVEL = {
 
 def load_level(path):
     """Loads level in SPRITES_GROUPS from path"""
+    global LEVEL_RECT
     if not os.path.isfile(path):
         print(f'Level {path} not found')
         terminate()
@@ -64,6 +68,7 @@ def load_level(path):
     max_width = len(max(level, key=lambda x: len(x)))
     level = list(map(lambda x: list(x) + ['.' for _ in range(len(x), max_width)], level))
     cell_size = CONFIG.getint('window_size', 'MinCellSize')
+    LEVEL_RECT = pygame.Rect(0, 0, max_width * cell_size, len(level) * cell_size)
     for row in enumerate(level):
         for el in enumerate(row[1]):
             if SPRITES_LEVEL[el[1]] is not None:
@@ -72,6 +77,7 @@ def load_level(path):
                 except TypeError:
                     SPRITES_LEVEL[el[1]](((el[0] + 1) * cell_size, (row[0] + 1) * cell_size),
                                          MAIN_BOARD)
+    print(LEVEL_RECT)
 
 
 def start_screen():
@@ -80,14 +86,29 @@ def start_screen():
 
 def level_selection() -> str:
     """returns level path"""
+    levels_buttons = list()
+
+    i, j = 10, 10
+    for level in map(lambda x: x.split('.')[0], os.listdir('data/levels')):
+        levels_buttons.append(Push_button(level, (i, j), (100, 20),
+                                          pygame.font.Font(None, 24),
+                                          pygame.Color('White'),
+                                          pygame.Color('Red')))
+        i += 200
+        if i > SIZE[0]:
+            i = 10
+            j += 50
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if pygame.mouse.get_pressed(3)[0]:
-                    for entity in point_collide(event.pos, SPRITES_GROUPS['ENTITIES']):
-                        entity.get_damage(Entity, 100000)
+        if pygame.mouse.get_pressed(3)[0]:
+            for button in levels_buttons:
+                if button.click(pygame.mouse.get_pos()):
+                    for group in SPRITES_GROUPS.values():
+                        group.empty()
+                    playing_level('data/levels/' + button.text + '.txt')
 
         MAIN_SCREEN.fill(pygame.Color('black'))
         for ent in SPRITES_GROUPS['ENTITIES']:
@@ -100,7 +121,94 @@ def level_selection() -> str:
 
 
 def playing_level(level_path):
-    pass
+    load_level(level_path)
+    selected_entity = None
+    ent_button = list()
+    flag_selecting_new_target = False
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+
+        if pygame.mouse.get_pressed(3)[0]:
+            if flag_selecting_new_target and LEVEL_RECT.collidepoint(pygame.mouse.get_pos()):
+                if selected_entity is not None:
+                    flag_iter = True
+                    for el in SPRITES_GROUPS['ENTITIES']:
+                        if el.click(pygame.mouse.get_pos()) and el.player != selected_entity.player:
+                            selected_entity.set_target(el)
+                            flag_iter = False
+                            break
+                    if flag_iter:
+                        selected_entity.set_target(pygame.mouse.get_pos())
+                    flag_selecting_new_target = False
+
+            for ent in SPRITES_GROUPS['ENTITIES']:
+                if ent.click(pygame.mouse.get_pos()):
+                    if ent != selected_entity:
+                        selected_entity = ent
+                        flag_selecting_new_target = False
+                        for el in ent_button:
+                            el.kill()
+                        ent_button = list()
+                        if selected_entity is not None and selected_entity.player == PLAYER:
+                            health_but = Push_button('hp: ' + str(ent.hp), (SIZE[0] - 210, 10),
+                                                     (200, 20),
+                                                     pygame.font.Font(None, 24),
+                                                     pygame.Color('White'),
+                                                     pygame.Color('Red'))
+                            ent_button.append(health_but)
+                            if type(selected_entity) == Tower:
+                                money_but = Push_button('money: ' + str(ent.money),
+                                                        (SIZE[0] - 210, 60),
+                                                        (200, 20),
+                                                        pygame.font.Font(None, 24),
+                                                        pygame.Color('White'),
+                                                        pygame.Color('Gold'))
+                                ent_button.append(money_but)
+                                for el in AVAILABLE_ENTITIES:
+                                    ent_button.append(
+                                        Push_button('spawn ' + el.__name__,
+                                                    (SIZE[0] - 210, 110),
+                                                    (200, 20),
+                                                    pygame.font.Font(None, 24),
+                                                    pygame.Color('White'),
+                                                    pygame.Color('Green')))
+                                    print(str(el))
+                            else:
+                                target_button = Toggle_button('set new target', (SIZE[0] - 210, 60),
+                                                            (120, 20),
+                                                            pygame.font.Font(None, 24),
+                                                            pygame.Color('White'),
+                                                            pygame.Color('Green'))
+                                ent_button.append(target_button)
+            for el in SPRITES_GROUPS['BUTTONS']:
+                if el.click(pygame.mouse.get_pos()):
+                    if type(selected_entity) == Tower:
+                        if el in ent_button[2:]:
+                            spawn_entity(eval(el.text.split()[1]), PLAYER)
+                    else:
+                        if el == target_button:
+                            flag_selecting_new_target = True
+                            mouse_down = True
+
+        MAIN_SCREEN.fill(pygame.Color('black'))
+
+        if selected_entity is not None and selected_entity.player == PLAYER:
+            health_but.set_text('hp: ' + str(selected_entity.hp))
+            if type(selected_entity) == Tower:
+                money_but.set_text('money: ' + str(selected_entity.money))
+
+        for ent in SPRITES_GROUPS['ENTITIES']:
+            ent.update()
+        for button in SPRITES_GROUPS['BUTTONS']:
+            button.update()
+        for group in SPRITES_GROUPS.values():
+            group.draw(MAIN_SCREEN)
+
+        CLOCK.tick(FPS)
+        pygame.display.flip()
 
 
 def finish_screen():
@@ -133,26 +241,7 @@ def main():
     pygame.display.set_caption('TowerGame')
 
     start_screen()
-
-    fps = CONFIG.getint('FPS', 'FPS')
-
-    button = Level_button('bib', (100, 100))
-
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                print(button.click(event.pos))
-
-        MAIN_SCREEN.fill(pygame.Color('black'))
-        for ent in SPRITES_GROUPS['ENTITIES']:
-            ent.update()
-        for group in SPRITES_GROUPS.values():
-            group.draw(MAIN_SCREEN)
-
-        CLOCK.tick(fps)
-        pygame.display.flip()
+    level_selection()
 
 
 if __name__ == '__main__':

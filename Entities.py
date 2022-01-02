@@ -40,6 +40,9 @@ class Entity(pygame.sprite.Sprite):
         """Checks if other.rect intersects with self.rect at the dist"""
         return get_intersection_two_rects(self.rect, other.rect, dist)
 
+    def click(self, coords) -> bool:
+        return self.rect.collidepoint(coords)
+
 
 class Moving_entity(Entity):
     def __init__(self, moving_images: cycle, player: Player, hp, max_hp, board, group=None):
@@ -147,6 +150,10 @@ class Warriors(Moving_entity):
 
     def update(self):
         if self.target is not None:
+            if type(self.target) != tuple:
+                if self.target.hp <= 0:
+                    self.target = None
+                    return None
             if type(self.target) == tuple:
                 if not self.move_to_target():
                     if self.rect.center == self.target:
@@ -176,3 +183,6 @@ class Tower(Entity):
         self.rect.center = spawn_coords
 
         self.player = player
+
+        self.money = CONFIG.getint('player', 'MoneyStart')
+        self.money_max = CONFIG.getint('player', 'MoneyMax')
