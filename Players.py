@@ -21,11 +21,11 @@ class Bot(Player):
         bot_count = 0
         player_count = 0
         for el in group:
-            if type(el) == Bot:
+            if type(el.player) == type(self):
                 bot_count += 1
             else:
                 player_count += 1
 
-        if player_count >= bot_count:
-            return False
+        if player_count > bot_count:
+            return True
         return False

@@ -125,8 +125,9 @@ def playing_level(level_path):
     selected_entity = None
     ent_button = list()
     flag_selecting_new_target = False
+    running = True
 
-    while True:
+    while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -178,10 +179,10 @@ def playing_level(level_path):
                                     print(str(el))
                             else:
                                 target_button = Toggle_button('set new target', (SIZE[0] - 210, 60),
-                                                            (120, 20),
-                                                            pygame.font.Font(None, 24),
-                                                            pygame.Color('White'),
-                                                            pygame.Color('Green'))
+                                                              (120, 20),
+                                                              pygame.font.Font(None, 24),
+                                                              pygame.Color('White'),
+                                                              pygame.Color('Green'))
                                 ent_button.append(target_button)
             for el in SPRITES_GROUPS['BUTTONS']:
                 if el.click(pygame.mouse.get_pos()):
@@ -206,6 +207,22 @@ def playing_level(level_path):
             if spawn_ent is not False:
                 spawn_ent.set_target(PLAYER_TOWER)
 
+        if PLAYER_TOWER.hp <= 0:
+            finish_button = Push_button('BOT WINS',
+                                        (SIZE[0] - SIZE[0] / 2, 500),
+                                        (300, 100),
+                                        pygame.font.Font(None, 30),
+                                        pygame.Color('White'),
+                                        pygame.Color('Red'))
+            running = False
+        elif BOT_TOWER.hp <= 0:
+            finish_button = Push_button('PLAYER WINS',
+                                        (SIZE[0] - SIZE[0] / 2, 500),
+                                        (300, 100),
+                                        pygame.font.Font(None, 30),
+                                        pygame.Color('White'),
+                                        pygame.Color('Red'))
+            running = False
         for ent in SPRITES_GROUPS['ENTITIES']:
             ent.update()
         for button in SPRITES_GROUPS['BUTTONS']:
@@ -215,6 +232,20 @@ def playing_level(level_path):
 
         CLOCK.tick(FPS)
         pygame.display.flip()
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+        if pygame.mouse.get_pressed(3)[0]:
+            if finish_button.click(pygame.mouse.get_pos()):
+                running = False
+
+    running = True
+    for group in SPRITES_GROUPS.values():
+        for el in group:
+            el.kill()
 
 
 def finish_screen():
@@ -247,7 +278,8 @@ def main():
     pygame.display.set_caption('TowerGame')
 
     start_screen()
-    playing_level(level_selection())
+    while True:
+        playing_level(level_selection())
 
 
 if __name__ == '__main__':
