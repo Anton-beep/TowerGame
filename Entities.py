@@ -138,6 +138,7 @@ class Warriors(Moving_entity):
         self.attack_speed = CONFIG.getint('warriors', 'CoolDownAttack')
         self.attack_cooldown = cycle(range(self.attack_speed + 1))
         self.distance_to_attack = CONFIG.getint('warriors', 'DistanceToAttack')
+        self.cost = CONFIG.getint('warriors', 'Cost')
 
     def get_damage(self, entity: Entity, damage: int) -> bool:
         """Gets some damage and if self.target is None then self.target is Entity

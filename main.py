@@ -188,11 +188,15 @@ def playing_level(level_path):
                 if el.click(pygame.mouse.get_pos()):
                     if type(selected_entity) == Tower:
                         if el in ent_button[2:]:
-                            spawn_entity(eval(el.text.split()[1]), PLAYER)
+                            entity_type = eval(el.text.split()[1])
+                            if PLAYER_TOWER.money - entity_type(
+                                    (0, 0), None, None, False).cost >= 0:
+                                spawn_ent = spawn_entity(entity_type, PLAYER)
+                                if spawn_ent:
+                                    PLAYER_TOWER.money -= spawn_ent.cost
                     else:
                         if el == target_button:
                             flag_selecting_new_target = True
-                            mouse_down = True
 
         MAIN_SCREEN.fill(pygame.Color('black'))
 
@@ -202,10 +206,11 @@ def playing_level(level_path):
                 money_but.set_text('money: ' + str(selected_entity.money))
 
         rand_ent = choice(AVAILABLE_ENTITIES)
-        if BOT_ENEMY.spawn_entity(SPRITES_GROUPS['ENTITIES'], rand_ent):
+        if BOT_ENEMY.spawn_entity(SPRITES_GROUPS['ENTITIES'], rand_ent, BOT_TOWER.money):
             spawn_ent = spawn_entity(rand_ent, BOT_ENEMY)
             if spawn_ent is not False:
                 spawn_ent.set_target(PLAYER_TOWER)
+                BOT_TOWER.money -= spawn_ent.cost
 
         if PLAYER_TOWER.hp <= 0:
             finish_button = Push_button('BOT WINS',
