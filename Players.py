@@ -1,5 +1,4 @@
 import configparser
-
 from start import CONFIG
 
 
@@ -17,6 +16,16 @@ class Player:
 
 class Bot(Player):
     """Must be clever"""
-    def update(self):
-        """do something"""
-        pass
+    def spawn_entity(self, group, ent) -> bool:
+        """if returns True -> need to spawn ent else False"""
+        bot_count = 0
+        player_count = 0
+        for el in group:
+            if type(el) == Bot:
+                bot_count += 1
+            else:
+                player_count += 1
+
+        if player_count >= bot_count:
+            return False
+        return False

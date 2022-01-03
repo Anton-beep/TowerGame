@@ -3,6 +3,7 @@ import os
 import pygame
 from pprint import pprint
 from collections import deque
+from random import choice
 from start import *
 from Players import *
 from Entities import *
@@ -199,6 +200,12 @@ def playing_level(level_path):
             if type(selected_entity) == Tower:
                 money_but.set_text('money: ' + str(selected_entity.money))
 
+        rand_ent = choice(AVAILABLE_ENTITIES)
+        if BOT_ENEMY.spawn_entity(SPRITES_GROUPS['ENTITIES'], rand_ent):
+            spawn_ent = spawn_entity(rand_ent, BOT_ENEMY)
+            if spawn_ent is not False:
+                spawn_ent.set_target(PLAYER_TOWER)
+
         for ent in SPRITES_GROUPS['ENTITIES']:
             ent.update()
         for button in SPRITES_GROUPS['BUTTONS']:
@@ -229,8 +236,8 @@ def spawn_entity(ent: type(Entity), player: Player):
                 flag = False
                 break
         if flag:
-            ent(coords, player, MAIN_BOARD)
-            return True
+            ent = ent(coords, player, MAIN_BOARD)
+            return ent
     return False
 
 
