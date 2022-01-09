@@ -9,6 +9,7 @@ from Players import *
 from Entities import *
 from Sprites import *
 from Buttons import *
+from Spells import *
 
 MAIN_BOARD = Board((1, 1), 50, 50)
 
@@ -121,18 +122,48 @@ def level_selection() -> str:
 
 
 def playing_level(level_path):
+    yet_chose = False
+    chosen_spell = ''
     load_level(level_path)
     selected_entity = None
     ent_button = list()
     flag_selecting_new_target = False
     running = True
+    poison = Poison_spell(SPRITES_GROUPS['SPELLS'])
+    light = Lightning_spell(SPRITES_GROUPS['SPELLS'])
+    heal = Heal_spell(SPRITES_GROUPS['SPELLS'])
 
     while running:
+        for spell in SPRITES_GROUPS['SPELLS']:
+            spell.update(time.time())
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if pygame.mouse.get_pressed(3)[0]:
+                    if yet_chose is False:
+                        for spell in point_collide(event.pos, SPRITES_GROUPS['SPELLS']):
+                            a = spell.select_spell(yet_chose)
+                            yet_chose = True
+                            chosen_spell = 'light' if a == 1 else 'poison' if a == 2 else 'heal'
+                    else:
+                        if chosen_spell == 'light' and light.return_status() is True:
+                            for entity in point_collide(event.pos, SPRITES_GROUPS['ENTITIES']):
+                                BOT_TOWER.money -= light.cost
+                                lightning_damage = light.damage_light(time.time())
+                                entity.get_damage(Entity, lightning_damage)
+                                yet_chose = False
+                        elif chosen_spell == 'poison' and poison.return_status() is True:
+                            BOT_TOWER.money -= poison.cost
+                            poison.damage_poison(time.time(), event.pos)
+                            yet_chose = False
+                        elif chosen_spell == 'heal' and poison.return_status() is True:
+                            BOT_TOWER.money -= heal.cost
+                            heal.damage_poison(time.time(), event.pos)
+                            yet_chose = False
 
         if pygame.mouse.get_pressed(3)[0]:
+
             if flag_selecting_new_target and LEVEL_RECT.collidepoint(pygame.mouse.get_pos()):
                 if selected_entity is not None:
                     flag_iter = True
@@ -228,12 +259,21 @@ def playing_level(level_path):
                                         pygame.Color('White'),
                                         pygame.Color('Red'))
             running = False
+
+        MAIN_SCREEN.fill(pygame.Color('black'))
+        FORWARD_SCREEN.fill(pygame.Color('black'))
+
+        FORWARD_SCREEN.set_colorkey((0, 0, 0))
+
         for ent in SPRITES_GROUPS['ENTITIES']:
             ent.update()
         for button in SPRITES_GROUPS['BUTTONS']:
             button.update()
         for group in SPRITES_GROUPS.values():
+            group.draw(FORWARD_SCREEN)
+        for group in CIRCLE_SPRITES_GROUPS.values():
             group.draw(MAIN_SCREEN)
+        MAIN_SCREEN.blit(FORWARD_SCREEN, (0, 0))
 
         CLOCK.tick(FPS)
         pygame.display.flip()
