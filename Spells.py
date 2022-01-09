@@ -55,6 +55,7 @@ class Lightning_spell(Spell):
         super().__init__(*group)
         self.damage = CONFIG.getint('lightning', 'damage')
         self.recharge_time = CONFIG.getint('lightning', 'recharge')
+        self.cost = CONFIG.getint('lightning', 'cost')
 
         self.image = Lightning_spell.icon
         self.rect = self.icon.get_rect()
@@ -92,6 +93,7 @@ class Poison_spell(Spell):
         self.damage = CONFIG.getint('poison', 'damage')
         self.radius = CONFIG.getint('poison', 'radius')
         self.recharge_time = CONFIG.getint('poison', 'recharge')
+        self.cost = CONFIG.getint('poison', 'cost')
 
         self.poison_time = CONFIG.getint('poison', 'poison_time')
         self.damage_tick = CONFIG.getint('poison', 'damage_tick')
@@ -139,6 +141,7 @@ class Heal_spell(Spell):
         self.heal = CONFIG.getint('heal', 'heal')
         self.radius = CONFIG.getint('heal', 'radius')
         self.recharge_time = CONFIG.getint('heal', 'recharge')
+        self.cost = CONFIG.getint('heal', 'cost')
 
         self.heal_time = CONFIG.getint('heal', 'heal_time')
         self.heal_tick = CONFIG.getint('heal', 'heal_tick')
