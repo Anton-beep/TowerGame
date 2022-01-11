@@ -41,7 +41,7 @@ def load_images(dir):
     if len(os.listdir(dir)) == 0:
         print('Dir ' + dir + ' is empty')
         sys.exit()
-    return list(map(lambda x: pygame.image.load(dir + "\\" + x), os.listdir(dir)))
+    return list(map(lambda x: pygame.image.load(dir + "/" + x), os.listdir(dir)))
 
 
 def load_image(path):

@@ -90,7 +90,7 @@ def level_selection() -> str:
     levels_buttons = list()
 
     i, j = 10, 10
-    for level in map(lambda x: x.split('.')[0], os.listdir('data/levels')):
+    for level in sorted(map(lambda x: x.split('.')[0], os.listdir('data/levels'))):
         levels_buttons.append(Push_button(level, (i, j), (100, 20),
                                           pygame.font.Font(None, 24),
                                           pygame.Color('White'),
@@ -267,6 +267,12 @@ def playing_level(level_path):
 
         for ent in SPRITES_GROUPS['ENTITIES']:
             ent.update()
+            ent.bib()
+            try:
+                for coords in ent.road:
+                    pygame.draw.circle(MAIN_SCREEN, pygame.Color('RED'), (coords[0] * 20, coords[1] * 20), 2)
+            except Exception:
+                pass
         for button in SPRITES_GROUPS['BUTTONS']:
             button.update()
         for group in SPRITES_GROUPS.values():

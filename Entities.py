@@ -43,6 +43,9 @@ class Entity(pygame.sprite.Sprite):
     def click(self, coords) -> bool:
         return self.rect.collidepoint(coords)
 
+    def bib(self):
+        return self.__hash__()
+
 
 class Moving_entity(Entity):
     def __init__(self, moving_images: cycle, player: Player, hp, max_hp, board, group=None):
@@ -79,6 +82,7 @@ class Moving_entity(Entity):
                     self.looking_at = 3
                 else:
                     self.looking_at = 1
+            self.image = pygame.transform.rotate(next(self.moving_images), self.looking_at * 90)
         return True
 
     def move_to_target(self):
@@ -92,9 +96,15 @@ class Moving_entity(Entity):
             else:
                 coords = self.target.rect.center
 
-            self.checkpoint = self.board.road_to_coords(
+            self.road = self.board.road_to_coords(
                 tuple(map(lambda x: x // self.board.cell_size, self.rect.center)),
-                tuple(map(lambda x: x // self.board.cell_size, coords)))[::-1][1]
+                tuple(map(lambda x: x // self.board.cell_size, coords)))
+
+            if self.road is None:
+                return False
+
+            self.checkpoint = self.road[::-1][1]
+
         else:
             # go and check collide
             delta_x = self.checkpoint[0] * self.board.cell_size - self.rect.center[0]
@@ -105,7 +115,6 @@ class Moving_entity(Entity):
                 self.move((copysign(1, delta_x), 0))
             if list(map(lambda x: x // self.board.cell_size, self.rect.center)) == self.checkpoint:
                 self.checkpoint = None
-        self.image = pygame.transform.rotate(next(self.moving_images), 90 * self.looking_at)
         return True
 
 
@@ -150,7 +159,7 @@ class Warriors(Moving_entity):
     def attack_target(self):
         """attack target and animation"""
         if next(self.attack_cooldown) == self.attack_speed:
-            self.image = next(self.attack_images)
+            self.image = pygame.transform.rotate(next(self.attack_images), self.looking_at * 90)
 
             return self.target.get_damage(self, self.strength)
         return False
@@ -182,14 +191,7 @@ class Warriors(Moving_entity):
 
 class Tower(Entity):
     def __init__(self, spawn_coords: tuple, player: Player, board: Board, add_to_group=True):
-        if add_to_group:
-            super().__init__(player, CONFIG.getint('tower', 'HP'),
-                             CONFIG.getint('tower', 'HPMax'), board, SPRITES_GROUPS['ENTITIES'])
-        else:
-            super().__init__(player, CONFIG.getint('tower', 'HP'),
-                             CONFIG.getint('tower', 'HPMax'), board)
         self.standing_image = load_image('data/tower/standing.png')
-
         self.image = self.standing_image
         self.rect = self.image.get_rect()
         self.rect.center = spawn_coords
@@ -198,3 +200,10 @@ class Tower(Entity):
 
         self.money = CONFIG.getint('player', 'MoneyStart')
         self.money_max = CONFIG.getint('player', 'MoneyMax')
+
+        if add_to_group:
+            super().__init__(player, CONFIG.getint('tower', 'HP'),
+                             CONFIG.getint('tower', 'HPMax'), board, SPRITES_GROUPS['ENTITIES'])
+        else:
+            super().__init__(player, CONFIG.getint('tower', 'HP'),
+                             CONFIG.getint('tower', 'HPMax'), board)
