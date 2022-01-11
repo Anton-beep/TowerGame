@@ -1,3 +1,6 @@
+import time
+
+import numpy as np
 import pygame
 from start import *
 from boards import Cell, Board
@@ -43,9 +46,6 @@ class Entity(pygame.sprite.Sprite):
     def click(self, coords) -> bool:
         return self.rect.collidepoint(coords)
 
-    def bib(self):
-        return self.__hash__()
-
 
 class Moving_entity(Entity):
     def __init__(self, moving_images: cycle, player: Player, hp, max_hp, board, group=None):
@@ -90,31 +90,41 @@ class Moving_entity(Entity):
             return False
 
         if self.checkpoint is None:
+            start = time.time()
             # need to create road for entity
+
+            args_for_board = [self]
             if type(self.target) == tuple:
                 coords = self.target
             else:
                 coords = self.target.rect.center
+                args_for_board.append(self.target)
 
             self.road = self.board.road_to_coords(
                 tuple(map(lambda x: x // self.board.cell_size, self.rect.center)),
-                tuple(map(lambda x: x // self.board.cell_size, coords)))
+                tuple(map(lambda x: x // self.board.cell_size, coords)),
+                *args_for_board
+            )
 
             if self.road is None:
                 return False
 
             self.checkpoint = self.road[::-1][1]
 
+            self.move_to_target()
+            print("--- %s seconds ---" % (time.time() - start))
         else:
             # go and check collide
             delta_x = self.checkpoint[0] * self.board.cell_size - self.rect.center[0]
             delta_y = self.checkpoint[1] * self.board.cell_size - self.rect.center[1]
-            if delta_y != 0:
-                self.move((0, copysign(1, delta_y)))
-            else:
-                self.move((copysign(1, delta_x), 0))
-            if list(map(lambda x: x // self.board.cell_size, self.rect.center)) == self.checkpoint:
+
+            if delta_x == 0 and delta_y == 0:
                 self.checkpoint = None
+            else:
+                if delta_x == 0:
+                    self.move((0, copysign(1, delta_y)))
+                elif delta_y == 0:
+                    self.move((copysign(1, delta_x), 0))
         return True
 
 

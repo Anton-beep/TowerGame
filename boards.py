@@ -1,7 +1,11 @@
 import pygame
+import numpy as np
 
 from start import *
 from pprint import pprint
+from time import time
+from numba import jit, njit
+import threading
 
 
 class Cell:
@@ -15,6 +19,19 @@ class Empty(Cell):
 
     def __repr__(self):
         return 'Empty'
+
+
+def check_sprite(collide_rect, el, i, j, int_board, exception_entities):
+    collide_rect.center = (i[1], j[1])
+    if el.rect.colliderect(collide_rect) and el not in exception_entities:
+        int_board[i[0][0]][j[0][0]] = -1
+
+
+def calculate_elem(board_int_copy, coords, i, j):
+    if board_int_copy[coords[0]][coords[1]] == 0:
+        board_int_copy[coords[0]][coords[1]] = board_int_copy[i][j] + 1
+        return True
+    return False
 
 
 class Board:
@@ -37,50 +54,35 @@ class Board:
                (mouse_pos[1] - self.top) // self.cell_size
 
     def get_int_board(self, collide_rect=pygame.Rect(0, 0, 1, 1), exception_entities=None):
-        int_board = self.board.copy()
-        for i in enumerate(list(map(lambda x: x * self.cell_size, range(self.width)))):
-            for j in enumerate(list(map(lambda y: y * self.cell_size, range(self.height)))):
-                flag = True
-                for group in SPRITES_GROUPS.values():
-                    for el in group:
-                        collide_rect.center = (i[1], j[1])
-                        if el.rect.colliderect(collide_rect) and el not in exception_entities:
-                            flag = False
-                            int_board[i[0]][j[0]] = -1
-                            break
-                if flag:
-                    int_board[i[0]][j[0]] = 0
+        int_board = np.array(list(map(lambda x: list(map(lambda y: y.get_int(), x)), self.board)))
+        for i in np.ndenumerate(np.arange(self.width) * self.cell_size):
+            for j in np.ndenumerate(np.arange(self.height) * self.cell_size):
+                for el in SPRITES_GROUPS['ENTITIES']:
+                    check_sprite(collide_rect, el, i, j, int_board, exception_entities)
+                for el in SPRITES_GROUPS['STATIC']:
+                    check_sprite(collide_rect, el, i, j, int_board, exception_entities)
 
         # print(*int_board, sep='\n')
         return int_board
 
-    def draw_map(self, start_coords, target_coords):
+    def draw_map(self, start_coords, target_coords, *args):
         exceptions = list()
-        collide_rect = None
-        for el in SPRITES_GROUPS['ENTITIES']:
-            if el.rect.collidepoint(list(map(lambda x: x * self.cell_size, target_coords))):
-                exceptions.append(el)
-            elif el.rect.collidepoint(list(map(lambda x: x * self.cell_size, start_coords))):
-                exceptions.append(el)
-                collide_rect = el.rect.copy()
+        collide_rect = args[0].rect.copy()
+        exceptions = args
         board_int_copy = self.get_int_board(collide_rect, exceptions)
         board_int_copy[start_coords[0]][start_coords[1]] = 1
         flag = True
         while flag:
             flag = False
-            for i in range(len(board_int_copy)):
-                for j in range(len(board_int_copy[i])):
+            for i in np.arange(len(board_int_copy)):
+                for j in np.arange(len(board_int_copy[i])):
                     if not board_int_copy[i][j] in (-1, 0):
                         neighbors = self.get_neighbors([i, j])
                         for coords in neighbors:
-                            try:
-                                if board_int_copy[coords[0]][coords[1]] == 0:
-                                    flag = True
-                                    board_int_copy[coords[0]][coords[1]] = board_int_copy[i][j] + 1
-                                    if coords == list(target_coords):
-                                        return board_int_copy
-                            except Exception:
-                                pass
+                            if calculate_elem(board_int_copy, coords, i, j):
+                                flag = True
+                            if coords == list(target_coords):
+                                return board_int_copy
 
     def get_neighbors(self, cell_coords):
         neighbors = list()
@@ -95,8 +97,8 @@ class Board:
             neighbors.append([x, y + 1])
         return neighbors
 
-    def road_to_coords(self, start_coords, target_coords):
-        board_int_copy = self.draw_map(start_coords, target_coords)
+    def road_to_coords(self, start_coords, target_coords, *args):
+        board_int_copy = self.draw_map(start_coords, target_coords, *args)
         if board_int_copy is None:
             return None
         coords_now = target_coords

@@ -10,8 +10,9 @@ from Entities import *
 from Sprites import *
 from Buttons import *
 from Spells import *
+import threading
 
-MAIN_BOARD = Board((1, 1), 50, 50)
+MAIN_BOARD = Board((1, 1), 25, 25)
 
 PLAYER = Player('blue')
 BOT_ENEMY = Bot('red')
@@ -22,6 +23,15 @@ SPAWN_POINTS = {PLAYER: list(),
 FPS = CONFIG.getint('FPS', 'FPS')
 
 AVAILABLE_ENTITIES = [Warriors]
+
+
+class Tread(threading.Thread):
+    def __init__(self, ent):
+        super().__init__(name='bib')
+        self.ent = ent
+
+    def run(self):
+        self.ent.update()
 
 
 def terminate():
@@ -265,14 +275,21 @@ def playing_level(level_path):
 
         FORWARD_SCREEN.set_colorkey((0, 0, 0))
 
+        threads = []
         for ent in SPRITES_GROUPS['ENTITIES']:
-            ent.update()
-            ent.bib()
+            threads.append(Tread(ent))
+
             try:
                 for coords in ent.road:
                     pygame.draw.circle(MAIN_SCREEN, pygame.Color('RED'), (coords[0] * 20, coords[1] * 20), 2)
             except Exception:
                 pass
+
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+
         for button in SPRITES_GROUPS['BUTTONS']:
             button.update()
         for group in SPRITES_GROUPS.values():
