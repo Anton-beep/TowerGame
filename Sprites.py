@@ -57,7 +57,6 @@ class Wall(pygame.sprite.Sprite, Cell):
         self.image = load_image(CONFIG['wall']['wall_image'])
         self.rect = self.image.get_rect()
         self.rect.center = coords
-        board.board[coords[0] // board.cell_size][coords[1] // board.cell_size] = self
 
     def get_int(self):
         return -1

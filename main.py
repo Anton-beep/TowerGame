@@ -12,8 +12,6 @@ from Buttons import *
 from Spells import *
 import threading
 
-MAIN_BOARD = Board((1, 1), 25, 25)
-
 PLAYER = Player('blue')
 BOT_ENEMY = Bot('red')
 
@@ -23,6 +21,8 @@ SPAWN_POINTS = {PLAYER: list(),
 FPS = CONFIG.getint('FPS', 'FPS')
 
 AVAILABLE_ENTITIES = [Warriors]
+
+MAIN_BOARD = None
 
 
 class Tread(threading.Thread):
@@ -71,6 +71,7 @@ SPRITES_LEVEL = {
 def load_level(path):
     """Loads level in SPRITES_GROUPS from path"""
     global LEVEL_RECT
+    global MAIN_BOARD
     if not os.path.isfile(path):
         print(f'Level {path} not found')
         terminate()
@@ -78,17 +79,25 @@ def load_level(path):
         level = list(map(lambda x: x.rstrip(), f.readlines()))
     max_width = len(max(level, key=lambda x: len(x)))
     level = list(map(lambda x: list(x) + ['.' for _ in range(len(x), max_width)], level))
-    cell_size = CONFIG.getint('window_size', 'MinCellSize')
+
+    board_width = CONFIG.getint('window_size', 'WidthBoard')
+    board_height = CONFIG.getint('window_size', 'HeightBoard')
+    cell_size = CONFIG.getint('window_size', 'CellLevel')
+    print(len(level) // board_height, len(level[0]) // board_width)
+    cell_size_board = min(len(level) * cell_size // board_height, len(level[0]) * cell_size // board_width)
+
+    MAIN_BOARD = Board((1, 1), board_width, board_height, cell_size_board)
+
     LEVEL_RECT = pygame.Rect(0, 0, max_width * cell_size, len(level) * cell_size)
     for row in enumerate(level):
         for el in enumerate(row[1]):
             if SPRITES_LEVEL[el[1]] is not None:
+
                 try:
                     SPRITES_LEVEL[el[1]](((el[0] + 1) * cell_size, (row[0] + 1) * cell_size))
                 except TypeError:
                     SPRITES_LEVEL[el[1]](((el[0] + 1) * cell_size, (row[0] + 1) * cell_size),
                                          MAIN_BOARD)
-    print(LEVEL_RECT)
 
 
 def start_screen():
@@ -185,6 +194,7 @@ def playing_level(level_path):
                     if flag_iter:
                         selected_entity.set_target(pygame.mouse.get_pos())
                     flag_selecting_new_target = False
+                    target_button.reset_cooldown()
 
             for ent in SPRITES_GROUPS['ENTITIES']:
                 if ent.click(pygame.mouse.get_pos()):
@@ -217,7 +227,6 @@ def playing_level(level_path):
                                                     pygame.font.Font(None, 24),
                                                     pygame.Color('White'),
                                                     pygame.Color('Green')))
-                                    print(str(el))
                             else:
                                 target_button = Toggle_button('set new target', (SIZE[0] - 210, 60),
                                                               (120, 20),
@@ -279,11 +288,12 @@ def playing_level(level_path):
         for ent in SPRITES_GROUPS['ENTITIES']:
             threads.append(Tread(ent))
 
-            try:
-                for coords in ent.road:
-                    pygame.draw.circle(MAIN_SCREEN, pygame.Color('RED'), (coords[0] * 20, coords[1] * 20), 2)
-            except Exception:
-                pass
+            # try:
+            #     for coords in ent.road:
+            #         pygame.draw.circle(MAIN_SCREEN, pygame.Color('RED'), (coords[0] * MAIN_BOARD.cell_size,
+            #                                                               coords[1] * MAIN_BOARD.cell_size), 2)
+            # except Exception:
+            #     pass
 
         for thread in threads:
             thread.start()

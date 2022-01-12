@@ -34,12 +34,26 @@ def calculate_elem(board_int_copy, coords, i, j):
     return False
 
 
+def get_neighbors(cell_coords, width, height):
+    neighbors = list()
+    x, y = cell_coords
+    if x - 1 >= 0:
+        neighbors.append([x - 1, y])
+    if y - 1 >= 0:
+        neighbors.append([x, y - 1])
+    if x + 1 < width:
+        neighbors.append([x + 1, y])
+    if y + 1 < height:
+        neighbors.append([x, y + 1])
+    return neighbors
+
+
 class Board:
-    def __init__(self, coords_left_top, width, height):
+    def __init__(self, coords_left_top, width, height, cell_size):
         self.left = coords_left_top[0]
         self.top = coords_left_top[1]
 
-        self.cell_size = CONFIG.getint('window_size', 'MinCellSize')
+        self.cell_size = cell_size
 
         self.width = width
         self.height = height
@@ -54,7 +68,7 @@ class Board:
                (mouse_pos[1] - self.top) // self.cell_size
 
     def get_int_board(self, collide_rect=pygame.Rect(0, 0, 1, 1), exception_entities=None):
-        int_board = np.array(list(map(lambda x: list(map(lambda y: y.get_int(), x)), self.board)))
+        int_board = np.zeros((self.width, self.height))
         for i in np.ndenumerate(np.arange(self.width) * self.cell_size):
             for j in np.ndenumerate(np.arange(self.height) * self.cell_size):
                 for el in SPRITES_GROUPS['ENTITIES']:
@@ -66,7 +80,6 @@ class Board:
         return int_board
 
     def draw_map(self, start_coords, target_coords, *args):
-        exceptions = list()
         collide_rect = args[0].rect.copy()
         exceptions = args
         board_int_copy = self.get_int_board(collide_rect, exceptions)
@@ -77,25 +90,12 @@ class Board:
             for i in np.arange(len(board_int_copy)):
                 for j in np.arange(len(board_int_copy[i])):
                     if not board_int_copy[i][j] in (-1, 0):
-                        neighbors = self.get_neighbors([i, j])
+                        neighbors = get_neighbors([i, j], self.width, self.height)
                         for coords in neighbors:
                             if calculate_elem(board_int_copy, coords, i, j):
                                 flag = True
                             if coords == list(target_coords):
                                 return board_int_copy
-
-    def get_neighbors(self, cell_coords):
-        neighbors = list()
-        x, y = cell_coords
-        if x - 1 >= 0:
-            neighbors.append([x - 1, y])
-        if y - 1 >= 0:
-            neighbors.append([x, y - 1])
-        if x + 1 < self.width:
-            neighbors.append([x + 1, y])
-        if y + 1 < self.height:
-            neighbors.append([x, y + 1])
-        return neighbors
 
     def road_to_coords(self, start_coords, target_coords, *args):
         board_int_copy = self.draw_map(start_coords, target_coords, *args)
@@ -105,7 +105,7 @@ class Board:
         road = [coords_now]
         while board_int_copy[road[-1][0]][road[-1][1]] != 1:
             x, y = coords_now
-            neighbors = self.get_neighbors(coords_now)
+            neighbors = get_neighbors(coords_now, self.width, self.height)
             for coords in neighbors:
                 if board_int_copy[coords[0]][coords[1]] == \
                         board_int_copy[x][y] - 1:

@@ -42,17 +42,32 @@ class Push_button(Button):
 
 
 class Toggle_button(Button):
-    def __init__(self, text, coords, size, font, text_col, button_col):
-        super().__init__(text, coords, size, font, text_col, button_col)
+    def __init__(self, *args):
+        self.args = args
+        super().__init__(*args)
         self.cooldown = False
+        self.cooldownTime = 0
 
     def click(self, coords) -> bool:
         """returns True if coords on button"""
-        if self.rect.collidepoint(coords):
-            if not self.cooldown:
+        if self.cooldownTime == 10:
+            if self.rect.collidepoint(coords):
                 self.cooldown = not self.cooldown
-                return True
-        return False
+                self.cooldownTime = 0
+                if self.cooldown:
+                    super().__init__(*list(list(self.args)[:5] +
+                                     [pygame.Color(self.args[5][0] // 2, self.args[5][1] // 2, self.args[5][2] // 2)]))
+                    return True
+                else:
+                    super().__init__(*self.args)
+        else:
+            self.cooldownTime += 1
+            return False
+
+    def reset_cooldown(self):
+        """resets self.cooldown to default False"""
+        self.cooldown = False
+        super().__init__(*self.args)
 
     def update(self):
         pass

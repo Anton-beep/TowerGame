@@ -58,6 +58,9 @@ class Moving_entity(Entity):
         self.checkpoint = None
 
         self.looking_at = 1
+        self.road = None
+        self.update_road_int = 50
+        self.update_road_iter = self.update_road_int
         # looking positions: 3 - top, 0 - right, 1 - bottom, 2 - left
 
     def set_target(self, new):
@@ -85,47 +88,69 @@ class Moving_entity(Entity):
             self.image = pygame.transform.rotate(next(self.moving_images), self.looking_at * 90)
         return True
 
+    def set_new_road(self):
+        args_for_board = [self]
+        if type(self.target) == tuple:
+            coords = self.target
+        else:
+            coords = self.target.rect.center
+            args_for_board.append(self.target)
+
+        self.road = self.board.road_to_coords(
+            tuple(map(lambda x: x // self.board.cell_size, self.rect.center)),
+            tuple(map(lambda x: x // self.board.cell_size, coords)),
+            *args_for_board
+        )
+
+    def set_new_checkpoint(self):
+        # need to create road for entity
+        self.checkpoint = None
+        if self.road is None or len(self.road) < 2:
+            if self.update_road_iter >= self.update_road_int:
+                self.set_new_road()
+                self.update_road_iter = 0
+            if self.update_road_iter < self.update_road_int:
+                self.update_road_iter += 1
+        if self.road is not None:
+            try:
+                self.checkpoint = list(map(lambda x: x * self.board.cell_size, self.road[-2]))
+                del self.road[-2]
+            except IndexError:
+                pass
+            except TypeError:
+                pass
+
+            self.move_to_target()
+
     def move_to_target(self):
+        if self.update_road_iter < self.update_road_int:
+            self.update_road_iter += 1
+
         if self.target is None:
             return False
 
         if self.checkpoint is None:
-            start = time.time()
-            # need to create road for entity
+            self.set_new_checkpoint()
 
-            args_for_board = [self]
-            if type(self.target) == tuple:
-                coords = self.target
-            else:
-                coords = self.target.rect.center
-                args_for_board.append(self.target)
-
-            self.road = self.board.road_to_coords(
-                tuple(map(lambda x: x // self.board.cell_size, self.rect.center)),
-                tuple(map(lambda x: x // self.board.cell_size, coords)),
-                *args_for_board
-            )
-
-            if self.road is None:
-                return False
-
-            self.checkpoint = self.road[::-1][1]
-
-            self.move_to_target()
-            print("--- %s seconds ---" % (time.time() - start))
+            if type(self.target) == tuple and list(map(lambda x: x // self.board.cell_size, self.rect.center)) ==\
+                    list(map(lambda x: x // self.board.cell_size, self.target)):
+                self.checkpoint = self.target
         else:
             # go and check collide
-            delta_x = self.checkpoint[0] * self.board.cell_size - self.rect.center[0]
-            delta_y = self.checkpoint[1] * self.board.cell_size - self.rect.center[1]
+            delta_x = self.checkpoint[0] - self.rect.center[0]
+            delta_y = self.checkpoint[1] - self.rect.center[1]
 
-            if delta_x == 0 and delta_y == 0:
-                self.checkpoint = None
-            else:
-                if delta_x == 0:
-                    self.move((0, copysign(1, delta_y)))
-                elif delta_y == 0:
-                    self.move((copysign(1, delta_x), 0))
-        return True
+            flag = False
+            if delta_x == 0 and delta_y != 0:
+                flag = self.move((0, copysign(1, delta_y)))
+            elif delta_y == 0 and delta_x != 0:
+                flag = self.move((copysign(1, delta_x), 0))
+            elif delta_x != 0 and delta_y != 0:
+                flag = self.move((copysign(1, delta_x), 0))
+
+            if abs(delta_x) <= 1 and abs(delta_y) <= 1:
+                self.set_new_checkpoint()
+            return flag
 
 
 class Warriors(Moving_entity):
@@ -186,9 +211,9 @@ class Warriors(Moving_entity):
                     self.target = None
                     return None
             if type(self.target) == tuple:
-                if not self.move_to_target():
-                    if self.rect.center == self.target:
-                        self.target = None
+                self.move_to_target()
+                if self.rect.center == self.target:
+                    self.target = None
             else:
                 if self.get_intersection(self.target, self.distance_to_attack):
                     if self.attack_target():
@@ -196,7 +221,7 @@ class Warriors(Moving_entity):
                 else:
                     self.move_to_target()
         else:
-            self.image = next(self.standing_image)
+            self.image = pygame.transform.rotate(next(self.standing_image), self.looking_at * 90)
 
 
 class Tower(Entity):

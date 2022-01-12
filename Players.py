@@ -27,5 +27,6 @@ class Bot(Player):
                 player_count += 1
 
         if player_count > bot_count and money >= ent((0, 0), None, None, False).cost:
-            return ent
+            pass
+            # return ent
         return False
