@@ -167,9 +167,16 @@ def playing_level(level_path):
     ent_button = list()
     flag_selecting_new_target = False
     running = True
+    force_exit = False
     poison = Poison_spell(SPRITES_GROUPS['SPELLS'])
     light = Lightning_spell(SPRITES_GROUPS['SPELLS'])
     heal = Heal_spell(SPRITES_GROUPS['SPELLS'])
+    ExitButton = Push_button('exit level',
+                             (10, SIZE[1] - 30),
+                             (200, 20),
+                             pygame.font.Font(None, 24),
+                             pygame.Color('White'),
+                             pygame.Color('Orange'))
 
     while running:
         for spell in SPRITES_GROUPS['SPELLS']:
@@ -187,16 +194,17 @@ def playing_level(level_path):
                     else:
                         if chosen_spell == 'light' and light.return_status() is True:
                             for entity in point_collide(event.pos, SPRITES_GROUPS['ENTITIES']):
-                                BOT_TOWER.money -= light.cost
-                                lightning_damage = light.damage_light(time.time())
-                                entity.get_damage(Entity, lightning_damage)
-                                yet_chose = False
+                                if entity.player == BOT_ENEMY:
+                                    PLAYER_TOWER.money -= light.cost
+                                    lightning_damage = light.damage_light(time.time())
+                                    entity.get_damage(Entity, lightning_damage)
+                                    yet_chose = False
                         elif chosen_spell == 'poison' and poison.return_status() is True:
-                            BOT_TOWER.money -= poison.cost
+                            PLAYER_TOWER.money -= poison.cost
                             poison.damage_poison(time.time(), event.pos)
                             yet_chose = False
                         elif chosen_spell == 'heal' and poison.return_status() is True:
-                            BOT_TOWER.money -= heal.cost
+                            PLAYER_TOWER.money -= heal.cost
                             heal.damage_poison(time.time(), event.pos)
                             yet_chose = False
 
@@ -253,6 +261,7 @@ def playing_level(level_path):
                                                               pygame.Color('White'),
                                                               pygame.Color('Green'))
                                 ent_button.append(target_button)
+
             for el in SPRITES_GROUPS['BUTTONS']:
                 if el.click(pygame.mouse.get_pos()):
                     if type(selected_entity) == Tower:
@@ -263,6 +272,10 @@ def playing_level(level_path):
                                 spawn_ent = spawn_entity(entity_type, PLAYER)
                                 if spawn_ent:
                                     PLAYER_TOWER.money -= spawn_ent.cost
+                    elif el == ExitButton:
+                        force_exit = True
+                        running = False
+                        break
                     else:
                         if el == target_button:
                             flag_selecting_new_target = True
@@ -288,6 +301,10 @@ def playing_level(level_path):
                                         pygame.font.Font(None, 30),
                                         pygame.Color('White'),
                                         pygame.Color('Red'))
+            for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
+                sprite.kill()
+            for sprite in CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']:
+                sprite.kill()
             running = False
         elif BOT_TOWER.hp <= 0:
             finish_button = Push_button('PLAYER WINS',
@@ -296,6 +313,10 @@ def playing_level(level_path):
                                         pygame.font.Font(None, 30),
                                         pygame.Color('White'),
                                         pygame.Color('Red'))
+            for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
+                sprite.kill()
+            for sprite in CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']:
+                sprite.kill()
             running = False
 
         MAIN_SCREEN.fill(pygame.Color('black'))
@@ -330,15 +351,15 @@ def playing_level(level_path):
 
         CLOCK.tick(FPS)
         pygame.display.flip()
-
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()
-        if pygame.mouse.get_pressed(3)[0]:
-            if finish_button.click(pygame.mouse.get_pos()):
-                running = False
+    if not force_exit:
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    terminate()
+            if pygame.mouse.get_pressed(3)[0]:
+                if finish_button.click(pygame.mouse.get_pos()):
+                    running = False
 
     running = True
     for group in SPRITES_GROUPS.values():
@@ -362,8 +383,7 @@ def spawn_entity(ent: type(Entity), player: Player):
         flag = True
         for group in SPRITES_GROUPS.values():
             if not pygame.sprite.spritecollide(ent(coords, player,
-                                                   MAIN_BOARD, False), group, False)\
-                    in [[]]:
+                                                   MAIN_BOARD, False), group, False) in [[]]:
                 flag = False
                 break
         if flag:
