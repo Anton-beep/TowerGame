@@ -11,6 +11,7 @@ from Sprites import *
 from Buttons import *
 from Spells import *
 import threading
+from PIL import Image
 
 PLAYER = Player('blue')
 BOT_ENEMY = Bot('red')
@@ -68,6 +69,22 @@ SPRITES_LEVEL = {
 }
 
 
+def generateAndSetBackGroundLevel():
+    global BACKGROUND
+    images = list(map(lambda x: Image.open('data/backgroundImg/' + x),
+                      os.listdir('data/backgroundImg')))
+    img = Image.new('RGB', LEVEL_RECT.size, 'black')
+    for i in range(0, LEVEL_RECT.width, CONFIG.getint('window_size', 'CellLevel')):
+        for j in range(0, LEVEL_RECT.height, CONFIG.getint('window_size', 'CellLevel')):
+            img.paste(choice(images), (i, j))
+
+    img.save('data/background.png')
+    BACKGROUND = pygame.sprite.Sprite()
+    BACKGROUND.image = pygame.image.load('data/background.png')
+    BACKGROUND.rect = LEVEL_RECT.copy()
+    BACKGROUND = pygame.sprite.Group(BACKGROUND)
+
+
 def load_level(path):
     """Loads level in SPRITES_GROUPS from path"""
     global LEVEL_RECT
@@ -84,11 +101,13 @@ def load_level(path):
     board_height = CONFIG.getint('window_size', 'HeightBoard')
     cell_size = CONFIG.getint('window_size', 'CellLevel')
     print(len(level) // board_height, len(level[0]) // board_width)
-    cell_size_board = min(len(level) * cell_size // board_height, len(level[0]) * cell_size // board_width)
+    cell_size_board = min(len(level) * cell_size // board_height,
+                          len(level[0]) * cell_size // board_width)
 
-    MAIN_BOARD = Board((1, 1), board_width, board_height, cell_size_board)
+    MAIN_BOARD = Board((cell_size / 2, cell_size / 2), board_width, board_height, cell_size_board)
 
-    LEVEL_RECT = pygame.Rect(0, 0, max_width * cell_size, len(level) * cell_size)
+    LEVEL_RECT = pygame.Rect(cell_size / 2, cell_size / 2,
+                             max_width * cell_size, len(level) * cell_size)
     for row in enumerate(level):
         for el in enumerate(row[1]):
             if SPRITES_LEVEL[el[1]] is not None:
@@ -98,6 +117,7 @@ def load_level(path):
                 except TypeError:
                     SPRITES_LEVEL[el[1]](((el[0] + 1) * cell_size, (row[0] + 1) * cell_size),
                                          MAIN_BOARD)
+    generateAndSetBackGroundLevel()
 
 
 def start_screen():
@@ -280,6 +300,7 @@ def playing_level(level_path):
             running = False
 
         MAIN_SCREEN.fill(pygame.Color('black'))
+        BACKGROUND.draw(MAIN_SCREEN)
         FORWARD_SCREEN.fill(pygame.Color('black'))
 
         FORWARD_SCREEN.set_colorkey((0, 0, 0))
@@ -341,7 +362,9 @@ def spawn_entity(ent: type(Entity), player: Player):
     for coords in SPAWN_POINTS[player]:
         flag = True
         for group in SPRITES_GROUPS.values():
-            if pygame.sprite.spritecollide(ent(coords, player, MAIN_BOARD, False), group, False):
+            if not pygame.sprite.spritecollide(ent(coords, player,
+                                                   MAIN_BOARD, False), group, False)\
+                    in [[]]:
                 flag = False
                 break
         if flag:

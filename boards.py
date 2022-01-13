@@ -4,7 +4,6 @@ import numpy as np
 from start import *
 from pprint import pprint
 from time import time
-from numba import jit, njit
 import threading
 
 
@@ -100,6 +99,8 @@ class Board:
     def road_to_coords(self, start_coords, target_coords, *args):
         board_int_copy = self.draw_map(start_coords, target_coords, *args)
         if board_int_copy is None:
+            return None
+        if board_int_copy[target_coords[0]][target_coords[1]] == -1:
             return None
         coords_now = target_coords
         road = [coords_now]
