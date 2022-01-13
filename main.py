@@ -26,6 +26,7 @@ AVAILABLE_ENTITIES = [Warriors]
 
 MAIN_BOARD = None
 
+SCREEN_COLOR = pygame.Color((50, 50, 50))
 
 class Tread(threading.Thread):
     def __init__(self, ent):
@@ -149,7 +150,7 @@ def level_selection() -> str:
                         group.empty()
                     return 'data/levels/' + button.text + '.txt'
 
-        MAIN_SCREEN.fill(pygame.Color('black'))
+        MAIN_SCREEN.fill(SCREEN_COLOR)
         for ent in SPRITES_GROUPS['ENTITIES']:
             ent.update()
         for group in SPRITES_GROUPS.values():
@@ -167,9 +168,16 @@ def playing_level(level_path):
     ent_button = list()
     flag_selecting_new_target = False
     running = True
+    force_exit = False
     poison = Poison_spell(SPRITES_GROUPS['SPELLS'])
     light = Lightning_spell(SPRITES_GROUPS['SPELLS'])
     heal = Heal_spell(SPRITES_GROUPS['SPELLS'])
+    ExitButton = Push_button('exit level',
+                             (10, SIZE[1] - 30),
+                             (200, 20),
+                             pygame.font.Font(None, 24),
+                             pygame.Color('White'),
+                             pygame.Color('Orange'))
 
     while running:
         for spell in SPRITES_GROUPS['SPELLS']:
@@ -254,6 +262,7 @@ def playing_level(level_path):
                                                               pygame.Color('White'),
                                                               pygame.Color('Green'))
                                 ent_button.append(target_button)
+
             for el in SPRITES_GROUPS['BUTTONS']:
                 if el.click(pygame.mouse.get_pos()):
                     if type(selected_entity) == Tower:
@@ -264,11 +273,16 @@ def playing_level(level_path):
                                 spawn_ent = spawn_entity(entity_type, PLAYER)
                                 if spawn_ent:
                                     PLAYER_TOWER.money -= spawn_ent.cost
+                    elif el == ExitButton:
+                        force_exit = True
+                        running = False
+                        break
                     else:
                         if el == target_button:
                             flag_selecting_new_target = True
 
-        MAIN_SCREEN.fill(pygame.Color('black'))
+        MAIN_SCREEN.fill(SCREEN_COLOR)
+        FORWARD_SCREEN.fill(SCREEN_COLOR)
 
         if selected_entity is not None and selected_entity.player == PLAYER:
             health_but.set_text('hp: ' + str(selected_entity.hp))
@@ -307,20 +321,17 @@ def playing_level(level_path):
                 sprite.kill()
             running = False
 
-        MAIN_SCREEN.fill(pygame.Color('black'))
+        FORWARD_SCREEN.set_colorkey(SCREEN_COLOR)
         BACKGROUND.draw(MAIN_SCREEN)
-        FORWARD_SCREEN.fill(pygame.Color('black'))
-
-        FORWARD_SCREEN.set_colorkey((0, 0, 0))
-
         threads = []
         for ent in SPRITES_GROUPS['ENTITIES']:
             threads.append(Tread(ent))
 
             # try:
             #     for coords in ent.road:
-            #         pygame.draw.circle(MAIN_SCREEN, pygame.Color('RED'), (coords[0] * MAIN_BOARD.cell_size,
-            #                                                               coords[1] * MAIN_BOARD.cell_size), 2)
+            #         pygame.draw.circle(MAIN_SCREEN, pygame.Color('RED'),
+            #         (coords[0] * MAIN_BOARD.cell_size,
+            #                        coords[1] * MAIN_BOARD.cell_size), 2)
             # except Exception:
             #     pass
 
@@ -339,15 +350,15 @@ def playing_level(level_path):
 
         CLOCK.tick(FPS)
         pygame.display.flip()
-
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()
-        if pygame.mouse.get_pressed(3)[0]:
-            if finish_button.click(pygame.mouse.get_pos()):
-                running = False
+    if not force_exit:
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    terminate()
+            if pygame.mouse.get_pressed(3)[0]:
+                if finish_button.click(pygame.mouse.get_pos()):
+                    running = False
 
     running = True
     for group in SPRITES_GROUPS.values():
@@ -371,8 +382,7 @@ def spawn_entity(ent: type(Entity), player: Player):
         flag = True
         for group in SPRITES_GROUPS.values():
             if not pygame.sprite.spritecollide(ent(coords, player,
-                                                   MAIN_BOARD, False), group, False)\
-                    in [[]]:
+                                                   MAIN_BOARD, False), group, False) in [[]]:
                 flag = False
                 break
         if flag:

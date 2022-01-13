@@ -1,20 +1,25 @@
 import pygame
 from start import *
+from Sprites import load_image
 
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, text, coords, size, font, text_col, button_col):
+    def __init__(self, text, coords, size, font, text_col,
+                 button_col=load_image('data/buttonsImg/button1.png')):
         super().__init__(SPRITES_GROUPS['BUTTONS'])
         self.text = text
         self.coords = coords
         self.size = size
         self.font = font
         self.text_col = text_col
-        self.button_col = button_col
 
         self.text_surface = self.font.render(self.text, True, self.text_col)
-        self.image = pygame.Surface(self.size)
-        self.image.fill(self.button_col)
+        if type(button_col) == pygame.Color:
+            self.button_col = button_col
+            self.image = pygame.Surface(self.size)
+            self.image.fill(self.button_col)
+        else:
+            self.image = button_col
         self.image.blit(self.text_surface, (self.size[0] / 2 - self.text_surface.get_width() / 2,
                                             self.size[1] / 2 - self.text_surface.get_height() / 2))
         self.rect = self.image.get_rect()
