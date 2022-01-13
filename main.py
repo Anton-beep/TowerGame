@@ -12,6 +12,7 @@ from Buttons import *
 from Spells import *
 import threading
 from PIL import Image
+from math import ceil
 
 PLAYER = Player('blue')
 BOT_ENEMY = Bot('red')
@@ -97,14 +98,12 @@ def load_level(path):
     max_width = len(max(level, key=lambda x: len(x)))
     level = list(map(lambda x: list(x) + ['.' for _ in range(len(x), max_width)], level))
 
-    board_width = CONFIG.getint('window_size', 'WidthBoard')
-    board_height = CONFIG.getint('window_size', 'HeightBoard')
     cell_size = CONFIG.getint('window_size', 'CellLevel')
-    print(len(level) // board_height, len(level[0]) // board_width)
-    cell_size_board = min(len(level) * cell_size // board_height,
-                          len(level[0]) * cell_size // board_width)
+    cell_size_board = CONFIG.getint('window_size', 'CellSizeBoard')
 
-    MAIN_BOARD = Board((cell_size / 2, cell_size / 2), board_width, board_height, cell_size_board)
+    board_width = len(level)
+    board_height = len(level[0])
+    MAIN_BOARD = Board((cell_size / 2, cell_size / 2), board_height, board_width, cell_size_board)
 
     LEVEL_RECT = pygame.Rect(cell_size / 2, cell_size / 2,
                              max_width * cell_size, len(level) * cell_size)
