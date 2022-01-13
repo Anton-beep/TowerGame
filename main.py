@@ -187,16 +187,17 @@ def playing_level(level_path):
                     else:
                         if chosen_spell == 'light' and light.return_status() is True:
                             for entity in point_collide(event.pos, SPRITES_GROUPS['ENTITIES']):
-                                BOT_TOWER.money -= light.cost
-                                lightning_damage = light.damage_light(time.time())
-                                entity.get_damage(Entity, lightning_damage)
-                                yet_chose = False
+                                if entity.player == BOT_ENEMY:
+                                    PLAYER_TOWER.money -= light.cost
+                                    lightning_damage = light.damage_light(time.time())
+                                    entity.get_damage(Entity, lightning_damage)
+                                    yet_chose = False
                         elif chosen_spell == 'poison' and poison.return_status() is True:
-                            BOT_TOWER.money -= poison.cost
+                            PLAYER_TOWER.money -= poison.cost
                             poison.damage_poison(time.time(), event.pos)
                             yet_chose = False
                         elif chosen_spell == 'heal' and poison.return_status() is True:
-                            BOT_TOWER.money -= heal.cost
+                            PLAYER_TOWER.money -= heal.cost
                             heal.damage_poison(time.time(), event.pos)
                             yet_chose = False
 
@@ -288,6 +289,10 @@ def playing_level(level_path):
                                         pygame.font.Font(None, 30),
                                         pygame.Color('White'),
                                         pygame.Color('Red'))
+            for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
+                sprite.kill()
+            for sprite in CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']:
+                sprite.kill()
             running = False
         elif BOT_TOWER.hp <= 0:
             finish_button = Push_button('PLAYER WINS',
@@ -296,6 +301,10 @@ def playing_level(level_path):
                                         pygame.font.Font(None, 30),
                                         pygame.Color('White'),
                                         pygame.Color('Red'))
+            for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
+                sprite.kill()
+            for sprite in CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']:
+                sprite.kill()
             running = False
 
         MAIN_SCREEN.fill(pygame.Color('black'))

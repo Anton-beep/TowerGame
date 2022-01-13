@@ -30,10 +30,12 @@ class spell_circle(pygame.sprite.Sprite):
             self.kill()
         if time.time() - self.start_time >= self.tick:
             for entity in pygame.sprite.spritecollide(self, SPRITES_GROUPS['ENTITIES'], False):
-                if key == 'damage':
-                    entity.get_damage(Entity, hp)
-                elif key == 'heal':
-                    entity.get_hp(hp)
+                if entity.player == BOT_ENEMY:
+                    if key == 'damage':
+                        entity.get_damage(Entity, hp)
+                if entity.player == PLAYER:
+                    if key == 'heal':
+                        entity.get_hp(hp)
         pygame.draw.circle(self.image, pygame.Color(self.color),
                            (self.radius, self.radius), self.radius)
 
