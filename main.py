@@ -28,6 +28,7 @@ MAIN_BOARD = None
 
 SCREEN_COLOR = pygame.Color((50, 50, 50))
 
+
 class Tread(threading.Thread):
     def __init__(self, ent):
         super().__init__(name='bib')
@@ -265,7 +266,11 @@ def playing_level(level_path):
 
             for el in SPRITES_GROUPS['BUTTONS']:
                 if el.click(pygame.mouse.get_pos()):
-                    if type(selected_entity) == Tower:
+                    if el == ExitButton:
+                        force_exit = True
+                        running = False
+                        break
+                    elif type(selected_entity) == Tower:
                         if el in ent_button[2:]:
                             entity_type = eval(el.text.split()[1])
                             if PLAYER_TOWER.money - entity_type(
@@ -273,13 +278,11 @@ def playing_level(level_path):
                                 spawn_ent = spawn_entity(entity_type, PLAYER)
                                 if spawn_ent:
                                     PLAYER_TOWER.money -= spawn_ent.cost
-                    elif el == ExitButton:
-                        force_exit = True
-                        running = False
-                        break
                     else:
                         if el == target_button:
                             flag_selecting_new_target = True
+                if not running:
+                    break
 
         MAIN_SCREEN.fill(SCREEN_COLOR)
         FORWARD_SCREEN.fill(SCREEN_COLOR)
