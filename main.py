@@ -40,7 +40,6 @@ class Tread(threading.Thread):
         global TEMP_BUTTONS
 
 
-
 def terminate():
     pygame.quit()
     sys.exit()
@@ -107,16 +106,16 @@ def load_level(path):
     cell_size = CONFIG.getint('window_size', 'CellLevel')
     cell_size_board = CONFIG.getint('window_size', 'CellSizeBoard')
 
-    board_width = len(level)
-    board_height = len(level[0])
-    MAIN_BOARD = Board((cell_size / 2, cell_size / 2), board_height, board_width, cell_size_board)
+    board_width = len(level[0]) * cell_size
+    board_height = len(level) * cell_size
+    MAIN_BOARD = Board((cell_size / 2, cell_size / 2), board_width // cell_size_board, board_height // cell_size_board,
+                       cell_size_board)
 
     LEVEL_RECT = pygame.Rect(cell_size / 2, cell_size / 2,
                              max_width * cell_size, len(level) * cell_size)
     for row in enumerate(level):
         for el in enumerate(row[1]):
             if SPRITES_LEVEL[el[1]] is not None:
-
                 try:
                     SPRITES_LEVEL[el[1]](((el[0] + 1) * cell_size, (row[0] + 1) * cell_size))
                 except TypeError:
@@ -288,7 +287,7 @@ def playing_level(level_path):
                 money_but.set_text('золото: ' + str(selected_entity.money))
 
         rand_ent = choice(AVAILABLE_ENTITIES)
-        if BOT_ENEMY.spawn_entity(SPRITES_GROUPS['ENTITIES'], rand_ent, BOT_TOWER.money):
+        if BOT_TOWER.hp > 0 and BOT_ENEMY.spawn_entity(SPRITES_GROUPS['ENTITIES'], rand_ent, BOT_TOWER.money):
             spawn_ent = spawn_entity(rand_ent, BOT_ENEMY)
             if spawn_ent is not False:
                 spawn_ent.set_target(PLAYER_TOWER)
