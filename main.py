@@ -14,8 +14,8 @@ import threading
 from PIL import Image
 from math import ceil
 
-PLAYER = Player('blue')
-BOT_ENEMY = Bot('red')
+PLAYER = Player('red')
+BOT_ENEMY = Bot('blue')
 
 SPAWN_POINTS = {PLAYER: list(),
                 BOT_ENEMY: list()}
@@ -29,15 +29,6 @@ MAIN_BOARD = None
 SCREEN_COLOR = pygame.Color(38, 70, 83)
 
 TEMP_BUTTONS = pygame.sprite.Group()
-
-
-class Tread(threading.Thread):
-    def __init__(self, ent):
-        super().__init__(name='bib')
-        self.ent = ent
-
-    def run(self):
-        global TEMP_BUTTONS
 
 
 def terminate():
@@ -236,7 +227,7 @@ def playing_level(level_path):
                         if selected_entity is not None and selected_entity.player == PLAYER:
                             health_but = Push_button(str(ent.hp), (SIZE[0] - 210, 10),
                                                      pygame.Color('White'),
-                                                     load_image('data/buttonsImg/healthBar.png'))
+                                                     load_image('data/buttonsImg/healthBarRed.png'))
                             ent_button[health_but] = None
                             if type(selected_entity) == Tower:
                                 money_but = Push_button('золото: ' + str(ent.money),
@@ -327,11 +318,18 @@ def playing_level(level_path):
             #     pass
 
             ent.update()
-            TEMP_BUTTONS.add(Push_button(f'{ent.hp}',
-                                         (ent.rect.x, ent.rect.y + ent.rect.height + 5),
-                                         pygame.Color('white'),
-                                         load_image('data/buttonsImg/healthBar.png')
-                                         ))
+            if ent.player.team == 'red':
+                TEMP_BUTTONS.add(Push_button(f'{ent.hp}',
+                                             (ent.rect.x, ent.rect.y + ent.rect.height + 5),
+                                             pygame.Color('white'),
+                                             load_image('data/buttonsImg/healthBarRed.png')
+                                             ))
+            else:
+                TEMP_BUTTONS.add(Push_button(f'{ent.hp}',
+                                             (ent.rect.x, ent.rect.y + ent.rect.height + 5),
+                                             pygame.Color('white'),
+                                             load_image('data/buttonsImg/healthBarBlue.png')
+                                             ))
 
         for button in SPRITES_GROUPS['BUTTONS']:
             button.update()
