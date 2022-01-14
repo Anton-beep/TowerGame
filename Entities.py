@@ -79,7 +79,8 @@ class Moving_entity(Entity):
             if listCollide not in [[], [self]]:
                 self.rect = self.rect.move(*tuple(map(lambda x: -x, motion)))
                 # print(list(filter(lambda x: x.player != self.player, list_collide)))
-                self.targets.extend(list(filter(lambda x: x.player != self.player, listCollide)))
+                self.targets.extend(list(filter(lambda x: type(x) == Entity and
+                                                          x.player != self.player, listCollide)))
                 self.target_now = self.targets[-1]
                 return False
         if not draw:
@@ -250,6 +251,7 @@ class Tower(Entity):
         self.rect.center = spawn_coords
         self.defendCoolDown = 50
         self.defendCoolDownMAX = 50
+        self.lastAttacker = None
 
         self.player = player
 
@@ -265,6 +267,7 @@ class Tower(Entity):
 
     def get_damage(self, entity, damage: int) -> bool:
         self.defendCoolDown = 0
+        self.lastAttacker = entity
         super().get_damage(entity, damage)
 
     def getRussianName():

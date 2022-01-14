@@ -16,7 +16,7 @@ class Player:
 
 class Bot(Player):
     """Must be clever"""
-    def spawn_entity(self, group, ent, tower) -> bool:
+    def spawn_entity(self, group, ent, tower):
         """if returns True -> need to spawn ent else False"""
         bot_count = 0
         player_count = 0
@@ -26,7 +26,9 @@ class Bot(Player):
             else:
                 player_count += 1
 
-        if (player_count > bot_count or tower.defendCoolDown < tower.defendCoolDownMAX) and\
-                tower.money >= ent((0, 0), None, None, False).cost:
-            return ent
+        if tower.money >= ent((0, 0), None, None, False).cost:
+            if tower.defendCoolDown < tower.defendCoolDownMAX:
+                return ent, tower.lastAttacker
+            elif player_count > bot_count:
+                return ent, 'playerTower'
         return False
