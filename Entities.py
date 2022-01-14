@@ -6,8 +6,10 @@ from start import *
 from boards import Cell, Board
 from Sprites import *
 from itertools import cycle
+from collections import deque
 from Players import Player
 from math import copysign
+from Buttons import Button, Push_button
 
 
 class Entity(pygame.sprite.Sprite):
@@ -54,7 +56,8 @@ class Moving_entity(Entity):
         self.moving_images = moving_images
 
         self.image = next(moving_images)
-        self.target = None
+        self.targets = [None]
+        self.target_now = None
         self.checkpoint = None
 
         self.looking_at = 1
@@ -64,13 +67,20 @@ class Moving_entity(Entity):
         # looking positions: 3 - top, 0 - right, 1 - bottom, 2 - left
 
     def set_target(self, new):
-        self.target = new
+        self.targets.append(new)
+        self.target_now = self.targets[-1]
 
     def move(self, motion, draw=True):
         self.rect = self.rect.move(motion)
         for group in SPRITES_GROUPS.values():
-            if not pygame.sprite.spritecollide(self, group, False) in [[], [self]]:
+            list_collide = pygame.sprite.spritecollide(self, group, False)
+            list_collide = list(filter(lambda x: type(x) != Push_button, list_collide))
+            if list_collide not in [[], [self]]:
                 self.rect = self.rect.move(*tuple(map(lambda x: -x, motion)))
+                # print(list(filter(lambda x: x.player != self.player, list_collide)))
+                list_collide = list(filter(lambda x: x.player != self.player and
+                                                     'get_damage' in dir(x), list_collide))
+                self.target_now = self.targets[-1]
                 return False
         if not draw:
             self.rect = self.rect.move(*tuple(map(lambda x: -x, motion)))
@@ -90,11 +100,11 @@ class Moving_entity(Entity):
 
     def set_new_road(self):
         args_for_board = [self]
-        if type(self.target) == tuple:
-            coords = self.target
+        if type(self.target_now) == tuple:
+            coords = self.target_now
         else:
-            coords = self.target.rect.center
-            args_for_board.append(self.target)
+            coords = self.target_now.rect.center
+            args_for_board.append(self.target_now)
 
         self.road = self.board.road_to_coords(
             tuple(map(lambda x: x // self.board.cell_size, self.rect.center)),
@@ -126,15 +136,16 @@ class Moving_entity(Entity):
         if self.update_road_iter < self.update_road_int:
             self.update_road_iter += 1
 
-        if self.target is None:
+        if self.target_now is None:
             return False
 
         if self.checkpoint is None:
             self.set_new_checkpoint()
 
-            if type(self.target) == tuple and list(map(lambda x: x // self.board.cell_size, self.rect.center)) ==\
-                    list(map(lambda x: x // self.board.cell_size, self.target)):
-                self.checkpoint = self.target
+            if type(self.target_now) == tuple and list(map(lambda x: x // self.board.cell_size,
+                                                           self.rect.center)) == \
+                    list(map(lambda x: x // self.board.cell_size, self.target_now)):
+                self.checkpoint = self.target_now
         else:
             # go and check collide
             delta_x = self.checkpoint[0] - self.rect.center[0]
@@ -175,7 +186,6 @@ class Warriors(Moving_entity):
         self.rect.center = spawn_coords
 
         self.player = player
-        self.target = None
         self.strength = CONFIG.getint('warriors', 'Strength')
         self.speed = CONFIG.getint('warriors', 'Speed')
         self.speed_cooldown = cycle(range(self.speed + 1))
@@ -184,11 +194,12 @@ class Warriors(Moving_entity):
         self.distance_to_attack = CONFIG.getint('warriors', 'DistanceToAttack')
         self.cost = CONFIG.getint('warriors', 'Cost')
 
-    def get_damage(self, entity: Entity, damage: int) -> bool:
+    def get_damage(self, entity, damage: int) -> bool:
         """Gets some damage and if self.target is None then self.target is Entity
         from which the damage was taken"""
-        if self.target is None:
-            self.target = entity
+        if entity != Entity:
+            self.targets.append(entity)
+            self.target_now = self.targets[-1]
         return super().get_damage(entity, damage)
 
     def attack_target(self):
@@ -196,7 +207,7 @@ class Warriors(Moving_entity):
         if next(self.attack_cooldown) == self.attack_speed:
             self.image = pygame.transform.rotate(next(self.attack_images), self.looking_at * 90)
 
-            return self.target.get_damage(self, self.strength)
+            return self.target_now.get_damage(self, self.strength)
         return False
 
     def move_to_target(self):
@@ -205,22 +216,26 @@ class Warriors(Moving_entity):
         return False
 
     def update(self):
-        if self.target is not None:
-            if type(self.target) != tuple:
-                if self.target.hp <= 0:
-                    self.target = None
+        if self.target_now is not None:
+            if type(self.target_now) != tuple:
+                if self.target_now.hp <= 0:
+                    self.target_now = None
+                    del self.targets[-1]
                     return None
-            if type(self.target) == tuple:
+            if type(self.target_now) == tuple:
                 self.move_to_target()
-                if self.rect.center == self.target:
-                    self.target = None
+                if self.rect.center == self.target_now:
+                    self.target_now = None
+                    del self.targets[-1]
             else:
-                if self.get_intersection(self.target, self.distance_to_attack):
+                if self.get_intersection(self.target_now, self.distance_to_attack):
                     if self.attack_target():
-                        self.target = None
+                        self.target_now = None
+                        del self.targets[-1]
                 else:
                     self.move_to_target()
         else:
+            self.target_now = self.targets[-1]
             self.image = pygame.transform.rotate(next(self.standing_image), self.looking_at * 90)
 
     def getRussianName():

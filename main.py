@@ -160,6 +160,7 @@ def playing_level(level_path):
     load_level(level_path)
     selected_entity = None
     ent_button = dict()
+    target_button = None
     flag_selecting_new_target = False
     running = True
     force_exit = False
@@ -182,6 +183,9 @@ def playing_level(level_path):
                     if yet_chose is False:
                         for spell in point_collide(event.pos, SPRITES_GROUPS['SPELLS']):
                             a = spell.select_spell(yet_chose)
+                            if target_button is not None:
+                                target_button.reset_cooldown()
+                                flag_selecting_new_target = False
                             yet_chose = True
                             chosen_spell = 'light' if a == 1 else 'poison' if a == 2 else 'heal'
                     else:
@@ -207,7 +211,8 @@ def playing_level(level_path):
                 if selected_entity is not None:
                     flag_iter = True
                     for el in SPRITES_GROUPS['ENTITIES']:
-                        if el.click(pygame.mouse.get_pos()) and el.player != selected_entity.player:
+                        if el.click(pygame.mouse.get_pos()) and el.player != selected_entity.player\
+                                and type(el) in AVAILABLE_ENTITIES:
                             selected_entity.set_target(el)
                             flag_iter = False
                             break
@@ -242,7 +247,8 @@ def playing_level(level_path):
                                                     pygame.Color('White'),
                                                     pygame.Color(42, 157, 143))] = el
                             else:
-                                target_button = Toggle_button('задать новую цель', (SIZE[0] - 210, 60),
+                                target_button = Toggle_button('задать новую цель',
+                                                              (SIZE[0] - 210, 60),
                                                               pygame.Color('White'),
                                                               pygame.Color(42, 157, 143))
                                 ent_button[target_button] = None
