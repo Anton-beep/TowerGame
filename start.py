@@ -7,7 +7,8 @@ CONFIG.read('config.cfg')
 CLOCK = pygame.time.Clock()
 pygame.font.init()
 SIZE = CONFIG.getint('window_size', 'WindowWidth'), CONFIG.getint('window_size', 'WindowHeight')
-MAIN_SCREEN = pygame.display.set_mode(SIZE)
+flags = pygame.DOUBLEBUF
+MAIN_SCREEN = pygame.display.set_mode(SIZE, flags, vsync=False)
 FORWARD_SCREEN = pygame.Surface(SIZE)
 
 SPRITES_GROUPS = {

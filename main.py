@@ -38,12 +38,7 @@ class Tread(threading.Thread):
 
     def run(self):
         global TEMP_BUTTONS
-        self.ent.update()
-        TEMP_BUTTONS.add(Push_button(f'hp: {self.ent.hp}',
-                                     (self.ent.rect.x, self.ent.rect.y + self.ent.rect.height + 5),
-                                     pygame.Color('white'),
-                                     load_image('data/buttonsImg/healthBar.png')
-                                     ))
+
 
 
 def terminate():
@@ -240,7 +235,7 @@ def playing_level(level_path):
                             el.kill()
                         ent_button = list()
                         if selected_entity is not None and selected_entity.player == PLAYER:
-                            health_but = Push_button('hp: ' + str(ent.hp), (SIZE[0] - 210, 10),
+                            health_but = Push_button(str(ent.hp), (SIZE[0] - 210, 10),
                                                      pygame.Color('White'),
                                                      load_image('data/buttonsImg/healthBar.png'))
                             ent_button.append(health_but)
@@ -288,7 +283,7 @@ def playing_level(level_path):
             sprite.kill()
 
         if selected_entity is not None and selected_entity.player == PLAYER:
-            health_but.set_text('hp: ' + str(selected_entity.hp))
+            health_but.set_text(str(selected_entity.hp))
             if type(selected_entity) == Tower:
                 money_but.set_text('money: ' + str(selected_entity.money))
 
@@ -322,10 +317,8 @@ def playing_level(level_path):
 
         FORWARD_SCREEN.set_colorkey(SCREEN_COLOR)
         BACKGROUND.draw(MAIN_SCREEN)
-        threads = []
-        for ent in SPRITES_GROUPS['ENTITIES']:
-            threads.append(Tread(ent))
 
+        for ent in SPRITES_GROUPS['ENTITIES']:
             # try:
             #     for coords in ent.road:
             #         pygame.draw.circle(MAIN_SCREEN, pygame.Color('RED'),
@@ -334,10 +327,12 @@ def playing_level(level_path):
             # except Exception:
             #     pass
 
-        for thread in threads:
-            thread.start()
-        for thread in threads:
-            thread.join()
+            ent.update()
+            TEMP_BUTTONS.add(Push_button(f'{ent.hp}',
+                                         (ent.rect.x, ent.rect.y + ent.rect.height + 5),
+                                         pygame.Color('white'),
+                                         load_image('data/buttonsImg/healthBar.png')
+                                         ))
 
         for button in SPRITES_GROUPS['BUTTONS']:
             button.update()

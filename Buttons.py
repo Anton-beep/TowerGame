@@ -14,7 +14,7 @@ class Button(pygame.sprite.Sprite):
 
         self.text_surface = self.font.render(self.text, True, self.text_col)
         if size is None:
-            self.size = (self.text_surface.get_width() + 20, self.text_surface.get_height())
+            self.size = (self.text_surface.get_width() + 20, self.text_surface.get_height() + 12)
         else:
             self.size = size
         if type(button_col) == pygame.Color:
@@ -23,7 +23,7 @@ class Button(pygame.sprite.Sprite):
             self.image.fill(self.button_col)
         else:
             self.button_col = button_col
-            self.image = pygame.transform.scale(button_col, self.text_surface.get_size())
+            self.image = pygame.transform.smoothscale(button_col, self.size)
         self.image.blit(self.text_surface, (self.size[0] / 2 - self.text_surface.get_width() / 2,
                                             self.size[1] / 2 - self.text_surface.get_height() / 2))
         self.rect = self.image.get_rect()
