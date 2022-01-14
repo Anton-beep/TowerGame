@@ -42,7 +42,7 @@ class Tread(threading.Thread):
         TEMP_BUTTONS.add(Push_button(f'hp: {self.ent.hp}',
                                      (self.ent.rect.x, self.ent.rect.y + self.ent.rect.height + 5),
                                      pygame.Color('white'),
-                                     pygame.Color('red')
+                                     load_image('data/buttonsImg/healthBar.png')
                                      ))
 
 
@@ -242,7 +242,7 @@ def playing_level(level_path):
                         if selected_entity is not None and selected_entity.player == PLAYER:
                             health_but = Push_button('hp: ' + str(ent.hp), (SIZE[0] - 210, 10),
                                                      pygame.Color('White'),
-                                                     pygame.Color('Red'))
+                                                     load_image('data/buttonsImg/healthBar.png'))
                             ent_button.append(health_but)
                             if type(selected_entity) == Tower:
                                 money_but = Push_button('money: ' + str(ent.money),

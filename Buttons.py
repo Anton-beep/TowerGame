@@ -5,7 +5,7 @@ from Sprites import load_image
 
 class Button(pygame.sprite.Sprite):
     def __init__(self, text, coords, text_col,
-                 button_col=load_image('data/buttonsImg/button1.png'), font=pygame.font.Font(None, 24), size=None):
+                 button_col=load_image('data/buttonsImg/button1.png'), font=pygame.font.Font(None, 26), size=None):
         super().__init__(SPRITES_GROUPS['BUTTONS'])
         self.text = text
         self.coords = coords
@@ -14,7 +14,7 @@ class Button(pygame.sprite.Sprite):
 
         self.text_surface = self.font.render(self.text, True, self.text_col)
         if size is None:
-            self.size = (self.text_surface.get_width() + 10, self.text_surface.get_height())
+            self.size = (self.text_surface.get_width() + 20, self.text_surface.get_height())
         else:
             self.size = size
         if type(button_col) == pygame.Color:
@@ -22,6 +22,7 @@ class Button(pygame.sprite.Sprite):
             self.image = pygame.Surface(self.size)
             self.image.fill(self.button_col)
         else:
+            self.button_col = button_col
             self.image = pygame.transform.scale(button_col, self.text_surface.get_size())
         self.image.blit(self.text_surface, (self.size[0] / 2 - self.text_surface.get_width() / 2,
                                             self.size[1] / 2 - self.text_surface.get_height() / 2))
