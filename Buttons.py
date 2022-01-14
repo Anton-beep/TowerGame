@@ -4,34 +4,37 @@ from Sprites import load_image
 
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, text, coords, size, font, text_col,
-                 button_col=load_image('data/buttonsImg/button1.png')):
+    def __init__(self, text, coords, text_col,
+                 button_col=load_image('data/buttonsImg/button1.png'), font=pygame.font.Font(None, 24), size=None):
         super().__init__(SPRITES_GROUPS['BUTTONS'])
         self.text = text
         self.coords = coords
-        self.size = size
         self.font = font
         self.text_col = text_col
 
         self.text_surface = self.font.render(self.text, True, self.text_col)
+        if size is None:
+            self.size = (self.text_surface.get_width() + 10, self.text_surface.get_height())
+        else:
+            self.size = size
         if type(button_col) == pygame.Color:
             self.button_col = button_col
             self.image = pygame.Surface(self.size)
             self.image.fill(self.button_col)
         else:
-            self.image = button_col
+            self.image = pygame.transform.scale(button_col, self.text_surface.get_size())
         self.image.blit(self.text_surface, (self.size[0] / 2 - self.text_surface.get_width() / 2,
                                             self.size[1] / 2 - self.text_surface.get_height() / 2))
         self.rect = self.image.get_rect()
         self.rect.topleft = coords
 
     def set_text(self, new):
-        self.__init__(new, self.coords, self.size, self.font, self.text_col, self.button_col)
+        self.__init__(new, self.coords, self.text_col, self.button_col)
 
 
 class Push_button(Button):
-    def __init__(self, text, coords, size, font, text_col, button_col):
-        super().__init__(text, coords, size, font, text_col, button_col)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.cooldown = 0
 
     def click(self, coords) -> bool:
@@ -60,8 +63,10 @@ class Toggle_button(Button):
                 self.cooldown = not self.cooldown
                 self.cooldownTime = 0
                 if self.cooldown:
-                    super().__init__(*list(list(self.args)[:5] +
-                                     [pygame.Color(self.args[5][0] // 2, self.args[5][1] // 2, self.args[5][2] // 2)]))
+                    if len(self.args) >= 4:
+                        super().__init__(*list(list(self.args)[:3] +
+                                         [pygame.Color(self.args[3][0] // 2, self.args[3][1] // 2,
+                                                       self.args[3][2] // 2)]))
                     return True
                 else:
                     super().__init__(*self.args)

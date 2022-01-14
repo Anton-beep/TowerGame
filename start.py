@@ -5,6 +5,7 @@ CONFIG = configparser.ConfigParser()
 CONFIG.read('config.cfg')
 
 CLOCK = pygame.time.Clock()
+pygame.font.init()
 SIZE = CONFIG.getint('window_size', 'WindowWidth'), CONFIG.getint('window_size', 'WindowHeight')
 MAIN_SCREEN = pygame.display.set_mode(SIZE)
 FORWARD_SCREEN = pygame.Surface(SIZE)

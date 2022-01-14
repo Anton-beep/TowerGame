@@ -41,8 +41,6 @@ class Tread(threading.Thread):
         self.ent.update()
         TEMP_BUTTONS.add(Push_button(f'hp: {self.ent.hp}',
                                      (self.ent.rect.x, self.ent.rect.y + self.ent.rect.height + 5),
-                                     (self.ent.rect.width, 20),
-                                     pygame.font.Font(None, 24),
                                      pygame.Color('white'),
                                      pygame.Color('red')
                                      ))
@@ -142,8 +140,7 @@ def level_selection() -> str:
 
     i, j = 10, 10
     for level in sorted(map(lambda x: x.split('.')[0], os.listdir('data/levels'))):
-        levels_buttons.append(Push_button(level, (i, j), (100, 20),
-                                          pygame.font.Font(None, 24),
+        levels_buttons.append(Push_button(level, (i, j),
                                           pygame.Color('White'),
                                           pygame.Color('Red')))
         i += 200
@@ -186,8 +183,6 @@ def playing_level(level_path):
     heal = Heal_spell(SPRITES_GROUPS['SPELLS'])
     ExitButton = Push_button('exit level',
                              (10, SIZE[1] - 30),
-                             (200, 20),
-                             pygame.font.Font(None, 24),
                              pygame.Color('White'),
                              pygame.Color('Orange'))
 
@@ -246,16 +241,12 @@ def playing_level(level_path):
                         ent_button = list()
                         if selected_entity is not None and selected_entity.player == PLAYER:
                             health_but = Push_button('hp: ' + str(ent.hp), (SIZE[0] - 210, 10),
-                                                     (200, 20),
-                                                     pygame.font.Font(None, 24),
                                                      pygame.Color('White'),
                                                      pygame.Color('Red'))
                             ent_button.append(health_but)
                             if type(selected_entity) == Tower:
                                 money_but = Push_button('money: ' + str(ent.money),
                                                         (SIZE[0] - 210, 60),
-                                                        (200, 20),
-                                                        pygame.font.Font(None, 24),
                                                         pygame.Color('White'),
                                                         pygame.Color('Gold'))
                                 ent_button.append(money_but)
@@ -263,14 +254,10 @@ def playing_level(level_path):
                                     ent_button.append(
                                         Push_button('spawn ' + el.__name__,
                                                     (SIZE[0] - 210, 110),
-                                                    (200, 20),
-                                                    pygame.font.Font(None, 24),
                                                     pygame.Color('White'),
                                                     pygame.Color('Green')))
                             else:
                                 target_button = Toggle_button('set new target', (SIZE[0] - 210, 60),
-                                                              (120, 20),
-                                                              pygame.font.Font(None, 24),
                                                               pygame.Color('White'),
                                                               pygame.Color('Green'))
                                 ent_button.append(target_button)
@@ -315,8 +302,6 @@ def playing_level(level_path):
         if PLAYER_TOWER.hp <= 0:
             finish_button = Push_button('BOT WINS',
                                         (SIZE[0] - SIZE[0] / 2, 500),
-                                        (300, 100),
-                                        pygame.font.Font(None, 30),
                                         pygame.Color('White'),
                                         pygame.Color('Red'))
             for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
@@ -327,8 +312,6 @@ def playing_level(level_path):
         elif BOT_TOWER.hp <= 0:
             finish_button = Push_button('PLAYER WINS',
                                         (SIZE[0] - SIZE[0] / 2, 500),
-                                        (300, 100),
-                                        pygame.font.Font(None, 30),
                                         pygame.Color('White'),
                                         pygame.Color('Red'))
             for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
