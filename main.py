@@ -169,14 +169,14 @@ def playing_level(level_path):
     chosen_spell = ''
     load_level(level_path)
     selected_entity = None
-    ent_button = list()
+    ent_button = dict()
     flag_selecting_new_target = False
     running = True
     force_exit = False
     poison = Poison_spell(SPRITES_GROUPS['SPELLS'])
     light = Lightning_spell(SPRITES_GROUPS['SPELLS'])
     heal = Heal_spell(SPRITES_GROUPS['SPELLS'])
-    ExitButton = Push_button('exit level',
+    ExitButton = Push_button('выйти с уровня',
                              (10, SIZE[1] - 30),
                              pygame.Color('White'),
                              pygame.Color('Orange'))
@@ -231,31 +231,31 @@ def playing_level(level_path):
                     if ent != selected_entity:
                         selected_entity = ent
                         flag_selecting_new_target = False
-                        for el in ent_button:
+                        for el in ent_button.keys():
                             el.kill()
-                        ent_button = list()
+                        ent_button = dict()
                         if selected_entity is not None and selected_entity.player == PLAYER:
                             health_but = Push_button(str(ent.hp), (SIZE[0] - 210, 10),
                                                      pygame.Color('White'),
                                                      load_image('data/buttonsImg/healthBar.png'))
-                            ent_button.append(health_but)
+                            ent_button[health_but] = None
                             if type(selected_entity) == Tower:
-                                money_but = Push_button('money: ' + str(ent.money),
+                                money_but = Push_button('золото: ' + str(ent.money),
                                                         (SIZE[0] - 210, 60),
                                                         pygame.Color('White'),
                                                         pygame.Color('Gold'))
-                                ent_button.append(money_but)
+                                ent_button[money_but] = None
                                 for el in AVAILABLE_ENTITIES:
-                                    ent_button.append(
-                                        Push_button('spawn ' + el.__name__,
+                                    ent_button[
+                                        Push_button('призвать ' + el.getRussianName(),
                                                     (SIZE[0] - 210, 110),
                                                     pygame.Color('White'),
-                                                    pygame.Color('Green')))
+                                                    pygame.Color('Green'))] = el
                             else:
-                                target_button = Toggle_button('set new target', (SIZE[0] - 210, 60),
+                                target_button = Toggle_button('задать новую цель', (SIZE[0] - 210, 60),
                                                               pygame.Color('White'),
                                                               pygame.Color('Green'))
-                                ent_button.append(target_button)
+                                ent_button[target_button] = None
 
             for el in SPRITES_GROUPS['BUTTONS']:
                 if el.click(pygame.mouse.get_pos()):
@@ -264,8 +264,8 @@ def playing_level(level_path):
                         running = False
                         break
                     elif type(selected_entity) == Tower:
-                        if el in ent_button[2:]:
-                            entity_type = eval(el.text.split()[1])
+                        if el in list(ent_button.keys())[2:]:
+                            entity_type = ent_button[el]
                             if PLAYER_TOWER.money - entity_type(
                                     (0, 0), None, None, False).cost >= 0:
                                 spawn_ent = spawn_entity(entity_type, PLAYER)
@@ -285,7 +285,7 @@ def playing_level(level_path):
         if selected_entity is not None and selected_entity.player == PLAYER:
             health_but.set_text(str(selected_entity.hp))
             if type(selected_entity) == Tower:
-                money_but.set_text('money: ' + str(selected_entity.money))
+                money_but.set_text('золото: ' + str(selected_entity.money))
 
         rand_ent = choice(AVAILABLE_ENTITIES)
         if BOT_ENEMY.spawn_entity(SPRITES_GROUPS['ENTITIES'], rand_ent, BOT_TOWER.money):
@@ -295,7 +295,7 @@ def playing_level(level_path):
                 BOT_TOWER.money -= spawn_ent.cost
 
         if PLAYER_TOWER.hp <= 0:
-            finish_button = Push_button('BOT WINS',
+            finish_button = Push_button('БОТ ВЫИГРАЛ',
                                         (SIZE[0] - SIZE[0] / 2, 500),
                                         pygame.Color('White'),
                                         pygame.Color('Red'))
@@ -305,7 +305,7 @@ def playing_level(level_path):
                 sprite.kill()
             running = False
         elif BOT_TOWER.hp <= 0:
-            finish_button = Push_button('PLAYER WINS',
+            finish_button = Push_button('ИГРОК ВЫИГРАЛ',
                                         (SIZE[0] - SIZE[0] / 2, 500),
                                         pygame.Color('White'),
                                         pygame.Color('Red'))

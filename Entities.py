@@ -223,6 +223,9 @@ class Warriors(Moving_entity):
         else:
             self.image = pygame.transform.rotate(next(self.standing_image), self.looking_at * 90)
 
+    def getRussianName():
+        return 'Воины'
+
 
 class Tower(Entity):
     def __init__(self, spawn_coords: tuple, player: Player, board: Board, add_to_group=True):
@@ -242,3 +245,6 @@ class Tower(Entity):
         else:
             super().__init__(player, CONFIG.getint('tower', 'HP'),
                              CONFIG.getint('tower', 'HPMax'), board)
+
+    def getRussianName():
+        return 'Башня'
