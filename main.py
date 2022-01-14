@@ -26,7 +26,7 @@ AVAILABLE_ENTITIES = [Warriors]
 
 MAIN_BOARD = None
 
-SCREEN_COLOR = pygame.Color((50, 50, 50))
+SCREEN_COLOR = pygame.Color(38, 70, 83)
 
 TEMP_BUTTONS = pygame.sprite.Group()
 
@@ -136,7 +136,7 @@ def level_selection() -> str:
     for level in sorted(map(lambda x: x.split('.')[0], os.listdir('data/levels'))):
         levels_buttons.append(Push_button(level, (i, j),
                                           pygame.Color('White'),
-                                          pygame.Color('Red')))
+                                          pygame.Color(42, 157, 143)))
         i += 200
         if i > SIZE[0]:
             i = 10
@@ -178,7 +178,7 @@ def playing_level(level_path):
     ExitButton = Push_button('выйти с уровня',
                              (10, SIZE[1] - 30),
                              pygame.Color('White'),
-                             pygame.Color('Orange'))
+                             pygame.Color(233, 196, 106))
 
     while running:
         for spell in SPRITES_GROUPS['SPELLS']:
@@ -242,18 +242,18 @@ def playing_level(level_path):
                                 money_but = Push_button('золото: ' + str(ent.money),
                                                         (SIZE[0] - 210, 60),
                                                         pygame.Color('White'),
-                                                        pygame.Color('Gold'))
+                                                        pygame.Color(233, 196, 106))
                                 ent_button[money_but] = None
                                 for el in AVAILABLE_ENTITIES:
                                     ent_button[
                                         Push_button('призвать ' + el.getRussianName(),
                                                     (SIZE[0] - 210, 110),
                                                     pygame.Color('White'),
-                                                    pygame.Color('Green'))] = el
+                                                    pygame.Color(42, 157, 143))] = el
                             else:
                                 target_button = Toggle_button('задать новую цель', (SIZE[0] - 210, 60),
                                                               pygame.Color('White'),
-                                                              pygame.Color('Green'))
+                                                              pygame.Color(42, 157, 143))
                                 ent_button[target_button] = None
 
             for el in SPRITES_GROUPS['BUTTONS']:
@@ -297,7 +297,7 @@ def playing_level(level_path):
             finish_button = Push_button('БОТ ВЫИГРАЛ',
                                         (SIZE[0] - SIZE[0] / 2, 500),
                                         pygame.Color('White'),
-                                        pygame.Color('Red'))
+                                        pygame.Color(231, 111, 81))
             for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
                 sprite.kill()
             for sprite in CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']:
@@ -307,7 +307,7 @@ def playing_level(level_path):
             finish_button = Push_button('ИГРОК ВЫИГРАЛ',
                                         (SIZE[0] - SIZE[0] / 2, 500),
                                         pygame.Color('White'),
-                                        pygame.Color('Red'))
+                                        pygame.Color(231, 111, 81))
             for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
                 sprite.kill()
             for sprite in CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']:
