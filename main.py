@@ -28,6 +28,8 @@ MAIN_BOARD = None
 
 SCREEN_COLOR = pygame.Color((50, 50, 50))
 
+TEMP_BUTTONS = pygame.sprite.Group()
+
 
 class Tread(threading.Thread):
     def __init__(self, ent):
@@ -35,7 +37,15 @@ class Tread(threading.Thread):
         self.ent = ent
 
     def run(self):
+        global TEMP_BUTTONS
         self.ent.update()
+        TEMP_BUTTONS.add(Push_button(f'hp: {self.ent.hp}',
+                                     (self.ent.rect.x, self.ent.rect.y + self.ent.rect.height + 5),
+                                     (self.ent.rect.width, 20),
+                                     pygame.font.Font(None, 24),
+                                     pygame.Color('white'),
+                                     pygame.Color('red')
+                                     ))
 
 
 def terminate():
@@ -74,14 +84,15 @@ SPRITES_LEVEL = {
 
 def generateAndSetBackGroundLevel():
     global BACKGROUND
+    global BACKGROUND_IMAGE
     images = list(map(lambda x: Image.open('data/backgroundImg/' + x),
                       os.listdir('data/backgroundImg')))
-    img = Image.new('RGB', LEVEL_RECT.size, 'black')
+    BACKGROUND_IMAGE = Image.new('RGB', LEVEL_RECT.size, 'black')
     for i in range(0, LEVEL_RECT.width, CONFIG.getint('window_size', 'CellLevel')):
         for j in range(0, LEVEL_RECT.height, CONFIG.getint('window_size', 'CellLevel')):
-            img.paste(choice(images), (i, j))
+            BACKGROUND_IMAGE.paste(choice(images), (i, j))
 
-    img.save('data/background.png')
+    BACKGROUND_IMAGE.save('data/background.png')
     BACKGROUND = pygame.sprite.Sprite()
     BACKGROUND.image = pygame.image.load('data/background.png')
     BACKGROUND.rect = LEVEL_RECT.copy()
@@ -286,6 +297,8 @@ def playing_level(level_path):
 
         MAIN_SCREEN.fill(SCREEN_COLOR)
         FORWARD_SCREEN.fill(SCREEN_COLOR)
+        for sprite in TEMP_BUTTONS:
+            sprite.kill()
 
         if selected_entity is not None and selected_entity.player == PLAYER:
             health_but.set_text('hp: ' + str(selected_entity.hp))
@@ -367,6 +380,7 @@ def playing_level(level_path):
     for group in SPRITES_GROUPS.values():
         for el in group:
             el.kill()
+    os.remove('data/background.png')
 
 
 def finish_screen():
