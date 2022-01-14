@@ -10,6 +10,7 @@ from collections import deque
 from Players import Player
 from math import copysign
 from Buttons import Button, Push_button
+from random import randint
 
 
 class Entity(pygame.sprite.Sprite):
@@ -29,7 +30,7 @@ class Entity(pygame.sprite.Sprite):
 
     def get_damage(self, entity, damage: int) -> bool:
         """Decreases hp for entity, if self.hp - damage <= 0 then returns True, which means dead"""
-        self.hp -= damage
+        self.hp -= damage + randint(round(-damage * 0.2), round(damage * 0.2))
         if self.hp <= 0:
             self.kill()
             return True
@@ -73,13 +74,12 @@ class Moving_entity(Entity):
     def move(self, motion, draw=True):
         self.rect = self.rect.move(motion)
         for group in SPRITES_GROUPS.values():
-            list_collide = pygame.sprite.spritecollide(self, group, False)
-            list_collide = list(filter(lambda x: type(x) != Push_button, list_collide))
-            if list_collide not in [[], [self]]:
+            listCollide = pygame.sprite.spritecollide(self, group, False)
+            listCollide = list(filter(lambda x: type(x) != Push_button, listCollide))
+            if listCollide not in [[], [self]]:
                 self.rect = self.rect.move(*tuple(map(lambda x: -x, motion)))
                 # print(list(filter(lambda x: x.player != self.player, list_collide)))
-                list_collide = list(filter(lambda x: x.player != self.player and
-                                                     'get_damage' in dir(x), list_collide))
+                self.targets.extend(list(filter(lambda x: x.player != self.player, listCollide)))
                 self.target_now = self.targets[-1]
                 return False
         if not draw:
@@ -248,6 +248,8 @@ class Tower(Entity):
         self.image = self.standing_image
         self.rect = self.image.get_rect()
         self.rect.center = spawn_coords
+        self.defendCoolDown = 50
+        self.defendCoolDownMAX = 50
 
         self.player = player
 
@@ -261,5 +263,13 @@ class Tower(Entity):
             super().__init__(player, CONFIG.getint('tower', 'HP'),
                              CONFIG.getint('tower', 'HPMax'), board)
 
+    def get_damage(self, entity, damage: int) -> bool:
+        self.defendCoolDown = 0
+        super().get_damage(entity, damage)
+
     def getRussianName():
         return 'Башня'
+
+    def update(self):
+        if self.defendCoolDown < self.defendCoolDownMAX:
+            self.defendCoolDown += 1

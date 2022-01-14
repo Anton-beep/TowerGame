@@ -284,7 +284,8 @@ def playing_level(level_path):
                 money_but.set_text('золото: ' + str(selected_entity.money))
 
         rand_ent = choice(AVAILABLE_ENTITIES)
-        if BOT_TOWER.hp > 0 and BOT_ENEMY.spawn_entity(SPRITES_GROUPS['ENTITIES'], rand_ent, BOT_TOWER.money):
+        if BOT_TOWER.hp > 0 and BOT_ENEMY.spawn_entity(SPRITES_GROUPS['ENTITIES'], rand_ent,
+                                                       BOT_TOWER):
             spawn_ent = spawn_entity(rand_ent, BOT_ENEMY)
             if spawn_ent is not False:
                 spawn_ent.set_target(PLAYER_TOWER)
