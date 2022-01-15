@@ -56,23 +56,26 @@ class Toggle_button(Button):
         super().__init__(*args)
         self.cooldown = False
         self.cooldownTime = 0
+        self.flag = False
 
     def click(self, coords) -> bool:
-        """returns True if coords on button"""
-        if self.cooldownTime == 10:
+        if self.cooldownTime == 0:
             if self.rect.collidepoint(coords):
-                self.cooldown = not self.cooldown
-                self.cooldownTime = 0
-                if self.cooldown:
-                    if len(self.args) >= 4:
-                        super().__init__(*list(list(self.args)[:3] +
-                                         [pygame.Color(self.args[3][0] // 2, self.args[3][1] // 2,
-                                                       self.args[3][2] // 2)]))
-                    return True
-                else:
-                    super().__init__(*self.args)
+                self.flag = True
+                print(self.flagClick, self.cooldown)
+                if self.flagClick != self.cooldown:
+                    if not self.cooldown:
+                        self.cooldown = not self.cooldown
+                        if len(self.args) >= 4:
+                            super().__init__(*list(list(self.args)[:3] +
+                                             [pygame.Color(self.args[3][0] // 2,
+                                                           self.args[3][1] // 2,
+                                                           self.args[3][2] // 2)]))
+                        return True
+                    else:
+                        self.cooldown = not self.cooldown
+                        super().__init__(*self.args)
         else:
-            self.cooldownTime += 1
             return False
 
     def reset_cooldown(self):
@@ -81,4 +84,8 @@ class Toggle_button(Button):
         super().__init__(*self.args)
 
     def update(self):
-        pass
+        if self.flag:
+            self.flagClick = True
+        else:
+            self.flagClick = False
+        self.flag = False
