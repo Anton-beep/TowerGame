@@ -211,8 +211,9 @@ def playing_level(level_path):
                 if selected_entity is not None:
                     flag_iter = True
                     for el in SPRITES_GROUPS['ENTITIES']:
+
                         if el.click(pygame.mouse.get_pos()) and el.player != selected_entity.player\
-                                and type(el) in AVAILABLE_ENTITIES:
+                                and type(el) in AVAILABLE_ENTITIES + [Tower]:
                             selected_entity.set_target(el)
                             flag_iter = False
                             break
@@ -235,6 +236,8 @@ def playing_level(level_path):
                                                      load_image('data/buttonsImg/healthBarRed.png'))
                             ent_button[health_but] = None
                             if type(selected_entity) == Tower:
+                                if target_button is not None:
+                                    target_button.kill()
                                 money_but = Push_button('золото: ' + str(ent.money),
                                                         (SIZE[0] - 210, 60),
                                                         pygame.Color('White'),
@@ -284,8 +287,7 @@ def playing_level(level_path):
                 money_but.set_text('золото: ' + str(selected_entity.money))
 
         rand_ent = choice(AVAILABLE_ENTITIES)
-        spawnEntityBot = BOT_ENEMY.spawn_entity(SPRITES_GROUPS['ENTITIES'], rand_ent,
-                               BOT_TOWER)
+        spawnEntityBot = BOT_ENEMY.spawn_entity(SPRITES_GROUPS['ENTITIES'], rand_ent, BOT_TOWER)
         if BOT_TOWER.hp > 0 and spawnEntityBot != False:
             spawn_ent = spawn_entity(rand_ent, BOT_ENEMY)
             if spawn_ent is not False:
