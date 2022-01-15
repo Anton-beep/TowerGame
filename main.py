@@ -116,7 +116,32 @@ def load_level(path):
 
 
 def start_screen():
-    pass
+    start_screen_ = pygame.transform.scale(load_image(CONFIG['start_screen']['start_screen_image']), SIZE)
+    MAIN_SCREEN.blit(start_screen_, (0, 0))
+
+    quit_button = Push_button('ВЫЙТИ ИЗ ИГРЫ',
+                              (SIZE[0] // 2 - 129, SIZE[1] - 100),
+                              pygame.Color('Black'),
+                              load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26), (258, 80))
+    MAIN_SCREEN.blit(quit_button.image, (SIZE[0] // 2 - 129, SIZE[1] - 100))
+    start_button = Push_button('ИГРАТЬ',
+                               (SIZE[0] // 2 - 129, SIZE[1] - 200),
+                               pygame.Color('Black'),
+                               load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26), (258, 80))
+    MAIN_SCREEN.blit(start_button.image, (SIZE[0] // 2 - 129, SIZE[1] - 200))
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if quit_button.click(event.pos):
+                    terminate()
+                if start_button.click(event.pos):
+                    quit_button.kill()
+                    start_button.kill()
+                    return
+        pygame.display.flip()
+        CLOCK.tick(FPS)
 
 
 def level_selection() -> str:
@@ -171,7 +196,6 @@ def playing_level(level_path):
                              (10, SIZE[1] - 30),
                              pygame.Color('White'),
                              pygame.Color(233, 196, 106))
-    RES_FILE.write(f"Запуск {level_path.split('/')[-1].split('.')[:-1][0]}\n\n")
 
     while running:
         for spell in SPRITES_GROUPS['SPELLS']:

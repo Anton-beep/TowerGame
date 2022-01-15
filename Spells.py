@@ -19,6 +19,7 @@ class spell_circle(pygame.sprite.Sprite):
         self.time = timing
         self.tick = tick
         self.start_time = start_time
+        self.time_tick = start_time
         self.attack_time = start_time
 
         self.color = color
@@ -28,7 +29,19 @@ class spell_circle(pygame.sprite.Sprite):
     def draw(self, hp, key):
         if time.time() - self.start_time >= self.time:
             self.kill()
-        if time.time() - self.start_time >= self.tick:
+            for spell in SPRITES_GROUPS['SPELLS']:
+                if key == 'damage':
+                    try:
+                        spell.range_of_poison.remove(self)
+                    except AttributeError:
+                        pass
+                elif key == 'heal':
+                    try:
+                        spell.range_of_heal.remove(self)
+                    except AttributeError:
+                        pass
+
+        if time.time() - self.time_tick >= self.tick:
             for entity in pygame.sprite.spritecollide(self, SPRITES_GROUPS['ENTITIES'], False):
                 if entity.player == BOT_ENEMY:
                     if key == 'damage':
@@ -37,7 +50,8 @@ class spell_circle(pygame.sprite.Sprite):
                                           PLAYER.getRussianName())
                 if entity.player == PLAYER:
                     if key == 'heal':
-                        entity.get_hp(hp)
+                        entity.get_hp(hp + entity.hp)
+                self.time_tick = time.time()
         pygame.draw.circle(self.image, pygame.Color(self.color),
                            (self.radius, self.radius), self.radius)
 
@@ -169,6 +183,7 @@ class Heal_spell(Spell):
         self.start_time = timing
         icon = load_image(CONFIG['heal']['Disable_icon'])
         self.image = icon
+        self.start_time1 = timing
         self.range_of_heal.append(
             spell_circle(self.radius, coordinates, 'yellow', self.heal_time, self.heal_tick, self.start_time,
                          CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']))
