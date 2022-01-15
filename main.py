@@ -270,12 +270,12 @@ def playing_level(level_path):
                                                         pygame.Color('White'),
                                                         pygame.Color(233, 196, 106))
                                 ent_button[money_but] = None
-                                for el in AVAILABLE_ENTITIES:
+                                for el in enumerate(AVAILABLE_ENTITIES):
                                     ent_button[
-                                        Push_button('призвать ' + el.getRussianName(),
-                                                    (SIZE[0] - 210, 110),
+                                        Push_button('призвать ' + el[1].getRussianName(),
+                                                    (SIZE[0] - 210, 110 + el[0] * 55),
                                                     pygame.Color('White'),
-                                                    pygame.Color(42, 157, 143))] = el
+                                                    pygame.Color(42, 157, 143))] = el[1]
                             else:
                                 target_button = Toggle_button('задать новую цель',
                                                               (SIZE[0] - 210, 60),
