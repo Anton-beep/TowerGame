@@ -25,7 +25,6 @@ class Bot(Player):
 
     def spawn_entity(self, group, ent, tower):
         """if returns True -> need to spawn ent else False"""
-        print(str(type(tower.lastAttacker))[:17])
         if tower.lastAttacker != self.target and\
                 str(type(tower.lastAttacker))[:17] == "<class 'Entities.":
             self.extraEnitities = 1
