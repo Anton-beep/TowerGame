@@ -274,6 +274,93 @@ class Warriors(Moving_entity):
         return 'Воины'
 
 
+class Archery(Moving_entity):
+    def __init__(self, spawn_coords: tuple, player: Player, board: Board, add_to_group=True):
+        if add_to_group:
+            super().__init__(cycle(load_images(CONFIG['warriors']['Moving_images'])), player,
+                             CONFIG.getint('archery', 'HP'),
+                             CONFIG.getint('archery', 'HPMax'),
+                             board,
+                             SPRITES_GROUPS['ENTITIES'])
+        else:
+            super().__init__(cycle(load_images(CONFIG['archery']['Moving_images'])), player,
+                             CONFIG.getint('archery', 'HP'),
+                             CONFIG.getint('archery', 'HPMax'),
+                             board)
+
+        self.attack_images = cycle(load_images(CONFIG['archery']['Attacking_images']))
+        self.standing_image = cycle(load_images(CONFIG['archery']['Standing_images']))
+
+        self.image = next(self.standing_image)
+        self.rect = self.image.get_rect()
+        self.rect.center = spawn_coords
+
+        self.player = player
+        self.strength = CONFIG.getint('archery', 'Strength')
+        self.speed = CONFIG.getint('archery', 'Speed')
+        self.speed_cooldown = cycle(range(self.speed + 1))
+        self.attack_speed = CONFIG.getint('archery', 'CoolDownAttack')
+        self.attack_cooldown = cycle(range(self.attack_speed + 1))
+        self.distance_to_attack = CONFIG.getint('archery', 'DistanceToAttack')
+        self.cost = CONFIG.getint('archery', 'Cost')
+
+    def get_damage(self, entity, damage: int, *args) -> bool:
+        """Gets some damage and if self.target is None then self.target is Entity
+        from which the damage was taken"""
+        if entity != Entity:
+            self.targets.append(entity)
+            self.target_now = self.targets[-1]
+        return super().get_damage(entity, damage, type(self).getRussianName(), *args)
+
+    def attack_target(self):
+        """attack target and animation"""
+        if next(self.attack_cooldown) == self.attack_speed:
+            self.image = pygame.transform.rotate(next(self.attack_images), self.looking_at * 90)
+
+            return self.target_now.get_damage(self, self.strength)
+        return False
+
+    def move_to_target(self):
+        if next(self.speed_cooldown) == self.speed:
+            return super().move_to_target()
+        return False
+
+    def check_near_enemies(self):
+        for ent in SPRITES_GROUPS['ENTITIES']:
+            if sqrt((ent.rect.center[0] - self.rect.center[0]) ** 2 + (
+                    ent.rect.center[1] - self.rect.center[1])
+                    ** 2) <= self.distance_to_attack and ent.player != self.player:
+                self.target_now = ent
+
+    def update(self):
+        self.check_near_enemies()
+        if self.target_now is not None:
+            if type(self.target_now) != tuple:
+                if self.target_now.hp <= 0:
+                    self.target_now = None
+                    del self.targets[-1]
+                    return None
+            if type(self.target_now) == tuple:
+                self.move_to_target()
+                if self.rect.center == self.target_now:
+                    self.target_now = None
+                    del self.targets[-1]
+            else:
+                if sqrt((self.target_now.rect.center[0] - self.rect.center[0]) ** 2 + (
+                        self.target_now.rect.center[1] - self.rect.center[1]) ** 2) <= self.distance_to_attack:
+                    if self.attack_target():
+                        self.target_now = None
+                        del self.targets[-1]
+                else:
+                    self.move_to_target()
+        else:
+            self.target_now = self.targets[-1]
+            self.image = pygame.transform.rotate(next(self.standing_image), self.looking_at * 90)
+
+    def getRussianName():
+        return 'Лучники'
+
+
 class Tower(Entity):
     def __init__(self, spawn_coords: tuple, player: Player, board: Board, add_to_group=True):
         self.standing_image = load_image('data/tower/standing.png')
