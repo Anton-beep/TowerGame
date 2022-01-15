@@ -22,7 +22,7 @@ SPAWN_POINTS = {PLAYER: list(),
 
 FPS = CONFIG.getint('FPS', 'FPS')
 
-AVAILABLE_ENTITIES = [Warriors]
+AVAILABLE_ENTITIES = [Archery]
 
 MAIN_BOARD = None
 
@@ -286,6 +286,10 @@ def playing_level(level_path):
             for el in SPRITES_GROUPS['BUTTONS']:
                 if el.click(pygame.mouse.get_pos()):
                     if el == ExitButton:
+                        for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
+                            sprite.kill()
+                        for sprite in CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']:
+                            sprite.kill()
                         force_exit = True
                         running = False
                         break
