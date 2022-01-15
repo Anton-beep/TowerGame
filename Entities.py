@@ -220,7 +220,7 @@ class Warriors(Moving_entity):
     def get_damage(self, entity, damage: int, *args) -> bool:
         """Gets some damage and if self.target is None then self.target is Entity
         from which the damage was taken"""
-        if entity != Entity:
+        if entity != Entity and self.hp < self.max_hp * 0.40:
             self.targets.append(entity)
             self.target_now = self.targets[-1]
         return super().get_damage(entity, damage, type(self).getRussianName(), *args)
