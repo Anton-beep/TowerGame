@@ -62,7 +62,6 @@ class Toggle_button(Button):
         if self.cooldownTime == 0:
             if self.rect.collidepoint(coords):
                 self.flag = True
-                print(self.flagClick, self.cooldown)
                 if self.flagClick != self.cooldown:
                     if not self.cooldown:
                         self.cooldown = not self.cooldown

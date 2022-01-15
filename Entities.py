@@ -101,7 +101,7 @@ class Moving_entity(Entity):
             if listCollide not in [[], [self]]:
                 self.rect = self.rect.move(*tuple(map(lambda x: -x, motion)))
                 # print(list(filter(lambda x: x.player != self.player, list_collide)))
-                self.targets.extend(list(filter(lambda x: type(x) == Entity and
+                self.targets.extend(list(filter(lambda x: str(type(x))[:17] == "<class 'Entities." and
                                                           x.player != self.player, listCollide)))
                 self.target_now = self.targets[-1]
                 return False
@@ -227,6 +227,15 @@ class Warriors(Moving_entity):
 
     def attack_target(self):
         """attack target and animation"""
+        if self.target_now.rect.center[0] > self.rect.center[0]:
+            self.looking_at = 0
+        elif self.target_now.rect.center[1] > self.rect.center[1]:
+            self.looking_at = 1
+        elif self.target_now.rect[0] < self.rect.center[0]:
+            self.looking_at = 2
+        elif self.target_now.rect[1] < self.rect.center[1]:
+            self.looking_at = 3
+
         if next(self.attack_cooldown) == self.attack_speed:
             self.image = pygame.transform.rotate(next(self.attack_images), self.looking_at * 90)
 

@@ -232,6 +232,12 @@ def playing_level(level_path):
                             heal.damage_poison(time.time(), event.pos)
                             yet_chose = False
 
+        if selected_entity is not None and selected_entity.hp <= 0:
+            for el in ent_button.keys():
+                el.kill()
+            ent_button = dict()
+            selected_entity = None
+
         if pygame.mouse.get_pressed(3)[0]:
 
             if flag_selecting_new_target and LEVEL_RECT.collidepoint(pygame.mouse.get_pos()):
