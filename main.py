@@ -22,7 +22,7 @@ SPAWN_POINTS = {PLAYER: list(),
 
 FPS = CONFIG.getint('FPS', 'FPS')
 
-AVAILABLE_ENTITIES = [Warriors]
+AVAILABLE_ENTITIES = [Warriors, Archery]
 
 MAIN_BOARD = None
 
@@ -232,6 +232,12 @@ def playing_level(level_path):
                             heal.damage_poison(time.time(), event.pos)
                             yet_chose = False
 
+        if selected_entity is not None and selected_entity.hp <= 0:
+            for el in ent_button.keys():
+                el.kill()
+            ent_button = dict()
+            selected_entity = None
+
         if pygame.mouse.get_pressed(3)[0]:
 
             if flag_selecting_new_target and LEVEL_RECT.collidepoint(pygame.mouse.get_pos()):
@@ -270,12 +276,12 @@ def playing_level(level_path):
                                                         pygame.Color('White'),
                                                         pygame.Color(233, 196, 106))
                                 ent_button[money_but] = None
-                                for el in AVAILABLE_ENTITIES:
+                                for el in enumerate(AVAILABLE_ENTITIES):
                                     ent_button[
-                                        Push_button('призвать ' + el.getRussianName(),
-                                                    (SIZE[0] - 210, 110),
+                                        Push_button('призвать ' + el[1].getRussianName(),
+                                                    (SIZE[0] - 210, 110 + el[0] * 60),
                                                     pygame.Color('White'),
-                                                    pygame.Color(42, 157, 143))] = el
+                                                    pygame.Color(42, 157, 143))] = el[1]
                             else:
                                 target_button = Toggle_button('задать новую цель',
                                                               (SIZE[0] - 210, 60),
@@ -286,6 +292,10 @@ def playing_level(level_path):
             for el in SPRITES_GROUPS['BUTTONS']:
                 if el.click(pygame.mouse.get_pos()):
                     if el == ExitButton:
+                        for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
+                            sprite.kill()
+                        for sprite in CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']:
+                            sprite.kill()
                         force_exit = True
                         running = False
                         break
