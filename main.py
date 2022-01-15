@@ -116,7 +116,32 @@ def load_level(path):
 
 
 def start_screen():
-    pass
+    start_screen_ = pygame.transform.scale(load_image(CONFIG['start_screen']['start_screen_image']), SIZE)
+    MAIN_SCREEN.blit(start_screen_, (0, 0))
+
+    quit_button = Push_button('ВЫЙТИ ИЗ ИГРЫ',
+                              (SIZE[0] // 2 - 129, SIZE[1] - 100),
+                              pygame.Color('Black'),
+                              load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26), (258, 80))
+    MAIN_SCREEN.blit(quit_button.image, (SIZE[0] // 2 - 129, SIZE[1] - 100))
+    start_button = Push_button('ИГРАТЬ',
+                               (SIZE[0] // 2 - 129, SIZE[1] - 200),
+                               pygame.Color('Black'),
+                               load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26), (258, 80))
+    MAIN_SCREEN.blit(start_button.image, (SIZE[0] // 2 - 129, SIZE[1] - 200))
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if quit_button.click(event.pos):
+                    terminate()
+                if start_button.click(event.pos):
+                    quit_button.kill()
+                    start_button.kill()
+                    return
+        pygame.display.flip()
+        CLOCK.tick(FPS)
 
 
 def level_selection() -> str:
@@ -211,7 +236,7 @@ def playing_level(level_path):
                 if selected_entity is not None:
                     flag_iter = True
                     for el in SPRITES_GROUPS['ENTITIES']:
-                        if el.click(pygame.mouse.get_pos()) and el.player != selected_entity.player\
+                        if el.click(pygame.mouse.get_pos()) and el.player != selected_entity.player \
                                 and type(el) in AVAILABLE_ENTITIES:
                             selected_entity.set_target(el)
                             flag_iter = False
@@ -285,7 +310,7 @@ def playing_level(level_path):
 
         rand_ent = choice(AVAILABLE_ENTITIES)
         spawnEntityBot = BOT_ENEMY.spawn_entity(SPRITES_GROUPS['ENTITIES'], rand_ent,
-                               BOT_TOWER)
+                                                BOT_TOWER)
         if BOT_TOWER.hp > 0 and spawnEntityBot != False:
             spawn_ent = spawn_entity(rand_ent, BOT_ENEMY)
             if spawn_ent is not False:
