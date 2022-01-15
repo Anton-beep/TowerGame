@@ -171,6 +171,7 @@ def playing_level(level_path):
                              (10, SIZE[1] - 30),
                              pygame.Color('White'),
                              pygame.Color(233, 196, 106))
+    RES_FILE.write(f"Запуск {level_path.split('/')[-1].split('.')[:-1][0]}\n\n")
 
     while running:
         for spell in SPRITES_GROUPS['SPELLS']:
@@ -194,7 +195,9 @@ def playing_level(level_path):
                                 if entity.player == BOT_ENEMY:
                                     PLAYER_TOWER.money -= light.cost
                                     lightning_damage = light.damage_light(time.time())
-                                    entity.get_damage(Entity, lightning_damage)
+                                    entity.get_damage(Entity, lightning_damage,
+                                                      'Заклинание молния',
+                                                      PLAYER.getRussianName())
                                     yet_chose = False
                         elif chosen_spell == 'poison' and poison.return_status() is True:
                             PLAYER_TOWER.money -= poison.cost
@@ -288,13 +291,13 @@ def playing_level(level_path):
 
         rand_ent = choice(AVAILABLE_ENTITIES)
         spawnEntityBot = BOT_ENEMY.spawn_entity(SPRITES_GROUPS['ENTITIES'], rand_ent, BOT_TOWER)
-        if BOT_TOWER.hp > 0 and spawnEntityBot != False:
+        if BOT_TOWER.hp > 0 and spawnEntityBot is not False:
             spawn_ent = spawn_entity(rand_ent, BOT_ENEMY)
             if spawn_ent is not False:
-                if spawnEntityBot[1] == 'playerTower':
-                    spawn_ent.set_target(PLAYER_TOWER)
-                else:
-                    spawn_ent.set_target(spawnEntityBot[1])
+                spawn_ent.setTargets(list(map(lambda x: x if x != 'playerTower' else PLAYER_TOWER,
+                                              spawnEntityBot[1])))
+                print(list(map(lambda x: x if x != 'playerTower' else PLAYER_TOWER,
+                                              spawnEntityBot[1])))
                 BOT_TOWER.money -= spawn_ent.cost
 
         if PLAYER_TOWER.hp <= 0:
@@ -302,6 +305,7 @@ def playing_level(level_path):
                                         (SIZE[0] - SIZE[0] / 2, 500),
                                         pygame.Color('White'),
                                         pygame.Color(231, 111, 81))
+            RES_FILE.write(f"БОТ ВЫИГРАЛ\n\n")
             for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
                 sprite.kill()
             for sprite in CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']:
@@ -312,6 +316,7 @@ def playing_level(level_path):
                                         (SIZE[0] - SIZE[0] / 2, 500),
                                         pygame.Color('White'),
                                         pygame.Color(231, 111, 81))
+            RES_FILE.write(f"ИГРОК ВЫИГРАЛ\n\n")
             for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
                 sprite.kill()
             for sprite in CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']:

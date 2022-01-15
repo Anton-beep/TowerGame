@@ -4,7 +4,6 @@ import numpy as np
 from start import *
 from pprint import pprint
 from time import time
-import threading
 
 
 class Cell:
@@ -22,11 +21,11 @@ class Empty(Cell):
 
 def check_sprite(collide_rect, el, i, j, int_board, exception_entities):
     collide_rect.center = (i[1], j[1])
-    if el.rect.colliderect(collide_rect) and el not in exception_entities:
+    if el not in exception_entities and el.rect.colliderect(collide_rect):
         int_board[i[0][0]][j[0][0]] = -1
 
 
-def calculate_elem(board_int_copy, coords, i, j):
+def calculate_elem(board_int_copy: np.ndarray, coords: np.ndarray, i: int, j: int) -> bool:
     if board_int_copy[coords[0]][coords[1]] == 0:
         board_int_copy[coords[0]][coords[1]] = board_int_copy[i][j] + 1
         return True

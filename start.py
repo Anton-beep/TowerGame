@@ -1,5 +1,6 @@
 import configparser
 import pygame
+from datetime import datetime as dt
 
 CONFIG = configparser.ConfigParser()
 CONFIG.read('config.cfg')
@@ -31,3 +32,6 @@ BOT_TOWER = None
 PLAYER_TOWER = None
 
 LEVEL_RECT = None
+
+RES_FILE = open(f"results/res_{str(dt.now())[:-7].replace(' ', '_').replace(':', '+')}.txt",
+                'w', encoding='utf-8')

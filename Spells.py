@@ -32,7 +32,9 @@ class spell_circle(pygame.sprite.Sprite):
             for entity in pygame.sprite.spritecollide(self, SPRITES_GROUPS['ENTITIES'], False):
                 if entity.player == BOT_ENEMY:
                     if key == 'damage':
-                        entity.get_damage(Entity, hp)
+                        entity.get_damage(Entity, hp,
+                                          'Заклинание яд',
+                                          PLAYER.getRussianName())
                 if entity.player == PLAYER:
                     if key == 'heal':
                         entity.get_hp(hp)

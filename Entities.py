@@ -11,6 +11,7 @@ from Players import Player
 from math import copysign
 from Buttons import Button, Push_button
 from random import randint
+from datetime import datetime as dt
 
 
 class Entity(pygame.sprite.Sprite):
@@ -28,11 +29,24 @@ class Entity(pygame.sprite.Sprite):
         """Increases hp for entity, if self.hp + hp_get > self.max_hp then self.hp = self.max_hp"""
         self.hp = min(self.max_hp, hp_get)
 
-    def get_damage(self, entity, damage: int) -> bool:
+    def get_damage(self, entity, damage: int, selfEntityName, entityName=None,
+                   attackPlayer=None) -> bool:
         """Decreases hp for entity, if self.hp - damage <= 0 then returns True, which means dead"""
         self.hp -= damage + randint(round(-damage * 0.2), round(damage * 0.2))
         if self.hp <= 0:
             self.kill()
+            print()
+            if attackPlayer is None:
+                attackPlayer = entity.player.getRussianName()
+            if entityName is None:
+                entityName = type(entity).getRussianName()
+
+            if entityName == 'Игрок':
+                RES_FILE.write(f'[{str(dt.now())}] : {attackPlayer} убил {selfEntityName} игрока '
+                               f'{self.player.getRussianName()}\n')
+            else:
+                RES_FILE.write(f'[{str(dt.now())}] : {attackPlayer} убил {selfEntityName} '
+                               f'при помощи {entityName}\n')
             return True
         return False
 
@@ -68,7 +82,15 @@ class Moving_entity(Entity):
         # looking positions: 3 - top, 0 - right, 1 - bottom, 2 - left
 
     def set_target(self, new):
-        self.targets.append(new)
+        self.targets = [None, new]
+        self.road = None
+        self.checkpoint = None
+        self.target_now = self.targets[-1]
+
+    def setTargets(self, new):
+        self.targets = [None] + new[::-1]
+        self.road = None
+        self.checkpoint = None
         self.target_now = self.targets[-1]
 
     def move(self, motion, draw=True):
@@ -195,13 +217,13 @@ class Warriors(Moving_entity):
         self.distance_to_attack = CONFIG.getint('warriors', 'DistanceToAttack')
         self.cost = CONFIG.getint('warriors', 'Cost')
 
-    def get_damage(self, entity, damage: int) -> bool:
+    def get_damage(self, entity, damage: int, *args) -> bool:
         """Gets some damage and if self.target is None then self.target is Entity
         from which the damage was taken"""
         if entity != Entity:
             self.targets.append(entity)
             self.target_now = self.targets[-1]
-        return super().get_damage(entity, damage)
+        return super().get_damage(entity, damage, type(self).getRussianName(), *args)
 
     def attack_target(self):
         """attack target and animation"""
@@ -249,8 +271,6 @@ class Tower(Entity):
         self.image = self.standing_image
         self.rect = self.image.get_rect()
         self.rect.center = spawn_coords
-        self.defendCoolDown = 50
-        self.defendCoolDownMAX = 50
         self.lastAttacker = None
 
         self.player = player
@@ -265,14 +285,9 @@ class Tower(Entity):
             super().__init__(player, CONFIG.getint('tower', 'HP'),
                              CONFIG.getint('tower', 'HPMax'), board)
 
-    def get_damage(self, entity, damage: int) -> bool:
-        self.defendCoolDown = 0
+    def get_damage(self, entity, damage: int, *args) -> bool:
         self.lastAttacker = entity
-        super().get_damage(entity, damage)
+        super().get_damage(entity, damage, type(self).getRussianName(), *args)
 
     def getRussianName():
         return 'Башня'
-
-    def update(self):
-        if self.defendCoolDown < self.defendCoolDownMAX:
-            self.defendCoolDown += 1
