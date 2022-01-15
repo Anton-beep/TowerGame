@@ -22,7 +22,7 @@ SPAWN_POINTS = {PLAYER: list(),
 
 FPS = CONFIG.getint('FPS', 'FPS')
 
-AVAILABLE_ENTITIES = [Archery]
+AVAILABLE_ENTITIES = [Warriors, Archery]
 
 MAIN_BOARD = None
 
@@ -232,12 +232,6 @@ def playing_level(level_path):
                             heal.damage_poison(time.time(), event.pos)
                             yet_chose = False
 
-        if selected_entity is not None and selected_entity.hp <= 0:
-            for el in ent_button.keys():
-                el.kill()
-            ent_button = dict()
-            selected_entity = None
-
         if pygame.mouse.get_pressed(3)[0]:
 
             if flag_selecting_new_target and LEVEL_RECT.collidepoint(pygame.mouse.get_pos()):
@@ -292,10 +286,6 @@ def playing_level(level_path):
             for el in SPRITES_GROUPS['BUTTONS']:
                 if el.click(pygame.mouse.get_pos()):
                     if el == ExitButton:
-                        for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
-                            sprite.kill()
-                        for sprite in CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']:
-                            sprite.kill()
                         force_exit = True
                         running = False
                         break
