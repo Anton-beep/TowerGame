@@ -267,15 +267,14 @@ def playing_level(level_path):
                 el.kill()
             ent_button = dict()
 
-        if type(selected_entity) == Tower and not TowerTip:
+        if type(selected_entity) == Tower:
             TipButton.kill()
             TipButton = Push_button(
                 'Выберите вид отряда нажатием на кнопку призвать...',
                 (10, SIZE[1] - 300),
                 pygame.Color('White'),
                 pygame.Color(231, 111, 81))
-            TowerTip = True
-        elif str(type(selected_entity))[:17] == "<class 'Entities." and not EntTip:
+        elif str(type(selected_entity))[:17] == "<class 'Entities.":
             TipButton.kill()
             TipButton = Push_button(
                 'Нажмите на кнопку задать новую цель и нажмите на вражеские силы чтобы '
@@ -283,7 +282,7 @@ def playing_level(level_path):
                 (10, SIZE[1] - 300),
                 pygame.Color('White'),
                 pygame.Color(231, 111, 81))
-            EntTip = True
+
         if pygame.mouse.get_pressed(3)[0]:
 
             if flag_selecting_new_target and LEVEL_RECT.collidepoint(pygame.mouse.get_pos()):
