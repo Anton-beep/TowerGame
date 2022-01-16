@@ -255,7 +255,7 @@ def playing_level(level_path):
                                 PLAYER_TOWER.money -= poison.cost
                                 poison.damage_poison(time.time(), event.pos, LEVEL_RECT)
                                 yet_chose = False
-                        elif chosen_spell == 'heal' and poison.return_status() is True:
+                        elif chosen_spell == 'heal' and heal.return_status() is True:
                             if LEVEL_RECT.collidepoint(event.pos):
                                 PLAYER_TOWER.money -= heal.cost
                                 heal.damage_poison(time.time(), event.pos, LEVEL_RECT)
