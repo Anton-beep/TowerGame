@@ -250,16 +250,19 @@ def playing_level(level_path):
                                                       'Заклинание молния',
                                                       PLAYER.getRussianName())
                                     yet_chose = False
+                                    chosen_spell = ''
                         elif chosen_spell == 'poison' and poison.return_status() is True:
                             if LEVEL_RECT.collidepoint(event.pos):
                                 PLAYER_TOWER.money -= poison.cost
                                 poison.damage_poison(time.time(), event.pos, LEVEL_RECT)
                                 yet_chose = False
+                                chosen_spell = ''
                         elif chosen_spell == 'heal' and heal.return_status() is True:
                             if LEVEL_RECT.collidepoint(event.pos):
                                 PLAYER_TOWER.money -= heal.cost
                                 heal.damage_poison(time.time(), event.pos, LEVEL_RECT)
                                 yet_chose = False
+                                chosen_spell = ''
 
         if selected_entity is not None and selected_entity.hp <= 0:
             selected_entity = None
