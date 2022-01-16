@@ -200,6 +200,7 @@ def playing_level(level_path):
     ent_button = dict()
     target_button = None
     flag_selecting_new_target = False
+    selected_entity = None
     running = True
     force_exit = False
     poison = Poison_spell(SPRITES_GROUPS['SPELLS'])
@@ -210,6 +211,11 @@ def playing_level(level_path):
                              pygame.Color('White'),
                              pygame.Color(233, 196, 106))
     RES_FILE.write(f"Запуск {level_path.split('/')[-1].split('.')[:-1][0]}\n\n")
+    TipButton = Push_button(
+        'Нажмите на вашу башню (красная полоска здоровья), чтобы призвать отряд',
+        (10, SIZE[1] - 300),
+        pygame.Color('White'),
+        pygame.Color(233, 196, 106))
 
     while running:
         for spell in SPRITES_GROUPS['SPELLS']:
@@ -238,14 +244,44 @@ def playing_level(level_path):
                                                       PLAYER.getRussianName())
                                     yet_chose = False
                         elif chosen_spell == 'poison' and poison.return_status() is True:
-                            PLAYER_TOWER.money -= poison.cost
-                            poison.damage_poison(time.time(), event.pos)
-                            yet_chose = False
+                            if LEVEL_RECT.collidepoint(event.pos):
+                                PLAYER_TOWER.money -= poison.cost
+                                poison.damage_poison(time.time(), event.pos, LEVEL_RECT)
+                                yet_chose = False
                         elif chosen_spell == 'heal' and poison.return_status() is True:
-                            PLAYER_TOWER.money -= heal.cost
-                            heal.damage_poison(time.time(), event.pos)
-                            yet_chose = False
+                            if LEVEL_RECT.collidepoint(event.pos):
+                                PLAYER_TOWER.money -= heal.cost
+                                heal.damage_poison(time.time(), event.pos, LEVEL_RECT)
+                                yet_chose = False
 
+        if selected_entity is not None and selected_entity.hp <= 0:
+            selected_entity = None
+            for el in ent_button.keys():
+                el.kill()
+            ent_button = dict()
+
+        if type(selected_entity) == Tower:
+            TipButton.kill()
+            TipButton = Push_button(
+                'Выберите вид отряда нажатием на кнопку призвать...',
+                (10, SIZE[1] - 300),
+                pygame.Color('White'),
+                pygame.Color(231, 111, 81))
+        elif selected_entity is None:
+            TipButton.kill()
+            TipButton = Push_button(
+                'Нажмите на вашу башню (красная полоска здоровья), чтобы призвать отряд',
+                (10, SIZE[1] - 300),
+                pygame.Color('White'),
+                pygame.Color(231, 111, 81))
+        else:
+            TipButton.kill()
+            TipButton = Push_button(
+                'Нажмите на кнопку задать новую цель и нажмите на вражеские силы чтобы '
+                'этот отряд начал атаковать или нажмите на точку на уровне',
+                (10, SIZE[1] - 300),
+                pygame.Color('White'),
+                pygame.Color(231, 111, 81))
         if pygame.mouse.get_pressed(3)[0]:
 
             if flag_selecting_new_target and LEVEL_RECT.collidepoint(pygame.mouse.get_pos()):
@@ -302,6 +338,10 @@ def playing_level(level_path):
                 if el.click(pygame.mouse.get_pos()):
                     if el == ExitButton:
                         force_exit = True
+                        for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
+                            sprite.kill()
+                        for sprite in CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']:
+                            sprite.kill()
                         running = False
                         break
                     elif type(selected_entity) == Tower:

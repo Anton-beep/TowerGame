@@ -11,7 +11,9 @@ from Entities import *
 
 
 class spell_circle(pygame.sprite.Sprite):
-    def __init__(self, radius, coordinates: tuple, color, timing, tick, start_time, *group):
+    def __init__(self, radius, coordinates: tuple, color, timing, tick, start_time,
+                 rectFit, *group):
+        print(rectFit)
         super().__init__(*group)
         self.radius = radius
         self.image = pygame.Surface((2 * radius, 2 * radius),
@@ -25,6 +27,9 @@ class spell_circle(pygame.sprite.Sprite):
         self.color = color
         self.rect = pygame.Rect(coordinates[0], coordinates[1], 2 * radius, 2 * radius)
         self.rect.center = coordinates
+
+        self.image.set_clip(rectFit.move(-coordinates[0] + radius,
+                                         -coordinates[1] + radius))
 
     def draw(self, hp, key):
         if time.time() - self.start_time >= self.time:
@@ -131,12 +136,14 @@ class Poison_spell(Spell):
             self.image = icon
             return 2
 
-    def damage_poison(self, timing, coordinates):
+    def damage_poison(self, timing, coordinates, rectFit):
         self.start_time = timing
         icon = load_image(CONFIG['poison']['Disable_icon'])
         self.image = icon
+        print(rectFit)
         self.range_of_poison.append(
-            spell_circle(self.radius, coordinates, 'green', self.poison_time, self.damage_tick, self.start_time,
+            spell_circle(self.radius, coordinates, 'green', self.poison_time, self.damage_tick,
+                         self.start_time, rectFit,
                          CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']))
         self.status = False
 
@@ -179,13 +186,14 @@ class Heal_spell(Spell):
             self.image = icon
             return 3
 
-    def damage_poison(self, timing, coordinates):
+    def damage_poison(self, timing, coordinates, rectFit):
         self.start_time = timing
         icon = load_image(CONFIG['heal']['Disable_icon'])
         self.image = icon
         self.start_time1 = timing
         self.range_of_heal.append(
-            spell_circle(self.radius, coordinates, 'yellow', self.heal_time, self.heal_tick, self.start_time,
+            spell_circle(self.radius, coordinates, 'yellow', self.heal_time, self.heal_tick,
+                         self.start_time, rectFit,
                          CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']))
         self.status = False
 
