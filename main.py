@@ -1,8 +1,6 @@
 import sys
 import os
 import pygame
-from pprint import pprint
-from collections import deque
 from random import choice
 from start import *
 from Players import *
@@ -10,9 +8,7 @@ from Entities import *
 from Sprites import *
 from Buttons import *
 from Spells import *
-import threading
 from PIL import Image
-from math import ceil
 
 PLAYER = Player('red')
 BOT_ENEMY = Bot('blue')
@@ -65,7 +61,7 @@ SPRITES_LEVEL = {
 }
 
 
-def generateAndSetBackGroundLevel():
+def generate_and_set_background_level():
     global BACKGROUND
     global BACKGROUND_IMAGE
     images = list(map(lambda x: Image.open('data/backgroundImg/' + x),
@@ -115,7 +111,7 @@ def load_level(path):
                     except TypeError:
                         SPRITES_LEVEL[el[1]](((el[0] + 1) * cell_size, (row[0] + 1) * cell_size),
                                              MAIN_BOARD)
-    generateAndSetBackGroundLevel()
+    generate_and_set_background_level()
     PLAYER_TOWER.money = money
 
 
@@ -214,6 +210,21 @@ def playing_level(level_path):
                              pygame.Color('White'),
                              pygame.Color(233, 196, 106))
     RES_FILE.write(f"Запуск {level_path.split('/')[-1].split('.')[:-1][0]}\n\n")
+
+    Push_button(f"+здоровье {CONFIG.getint('heal', 'heal')}",
+                (40, 650),
+                pygame.Color('White'),
+                pygame.Color(233, 196, 106))
+
+    Push_button(f"урон {CONFIG.getint('poison', 'damage')}",
+                (260, 650),
+                pygame.Color('White'),
+                pygame.Color(233, 196, 106))
+
+    Push_button(f"урон {CONFIG.getint('lightning', 'damage')}",
+                (450, 650),
+                pygame.Color('White'),
+                pygame.Color(233, 196, 106))
     TipButton = Push_button(
         'Нажмите на вашу башню (красная полоска здоровья), чтобы призвать отряд',
         (10, SIZE[1] - 300),

@@ -81,7 +81,7 @@ class Lightning_spell(Spell):
 
         self.image = Lightning_spell.icon
         self.rect = self.icon.get_rect()
-        self.rect.center = (300, 600)
+        self.rect.center = (500, 600)
 
     def select_spell(self, choose):
         if choose and self.status is True:
@@ -124,7 +124,7 @@ class Poison_spell(Spell):
 
         self.image = Poison_spell.icon
         self.rect = self.icon.get_rect()
-        self.rect.center = (200, 600)
+        self.rect.center = (300, 600)
 
     def select_spell(self, choose):
         if choose and self.status is True:
