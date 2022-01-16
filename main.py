@@ -91,6 +91,7 @@ def load_level(path):
         terminate()
     with open(path, 'r', encoding='utf-8') as f:
         level = list(map(lambda x: x.rstrip(), f.readlines()))
+    money = int(level[-1])
     max_width = len(max(level, key=lambda x: len(x)))
     level = list(map(lambda x: list(x) + ['.' for _ in range(len(x), max_width)], level))
 
@@ -104,16 +105,18 @@ def load_level(path):
                        cell_size_board)
 
     LEVEL_RECT = pygame.Rect(cell_size / 2, cell_size / 2,
-                             max_width * cell_size, len(level) * cell_size)
+                             max_width * cell_size, (len(level) - 1) * cell_size)
     for row in enumerate(level):
-        for el in enumerate(row[1]):
-            if SPRITES_LEVEL[el[1]] is not None:
-                try:
-                    SPRITES_LEVEL[el[1]](((el[0] + 1) * cell_size, (row[0] + 1) * cell_size))
-                except TypeError:
-                    SPRITES_LEVEL[el[1]](((el[0] + 1) * cell_size, (row[0] + 1) * cell_size),
-                                         MAIN_BOARD)
+        if row[0] != len(level) - 1:
+            for el in enumerate(row[1]):
+                if SPRITES_LEVEL[el[1]] is not None:
+                    try:
+                        SPRITES_LEVEL[el[1]](((el[0] + 1) * cell_size, (row[0] + 1) * cell_size))
+                    except TypeError:
+                        SPRITES_LEVEL[el[1]](((el[0] + 1) * cell_size, (row[0] + 1) * cell_size),
+                                             MAIN_BOARD)
     generateAndSetBackGroundLevel()
+    PLAYER_TOWER.money = money
 
 
 def start_screen():
