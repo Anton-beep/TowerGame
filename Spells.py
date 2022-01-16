@@ -141,7 +141,7 @@ class Poison_spell(Spell):
         self.image = icon
         print(rectFit)
         self.range_of_poison.append(
-            spell_circle(self.radius, coordinates, 'green', self.poison_time, self.damage_tick,
+            spell_circle(self.radius, coordinates, (0, 255, 0, 175), self.poison_time, self.damage_tick,
                          self.start_time, rectFit,
                          CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']))
         self.status = False
@@ -191,7 +191,7 @@ class Heal_spell(Spell):
         self.image = icon
         self.start_time1 = timing
         self.range_of_heal.append(
-            spell_circle(self.radius, coordinates, 'yellow', self.heal_time, self.heal_tick,
+            spell_circle(self.radius, coordinates, (255, 255, 0, 175), self.heal_time, self.heal_tick,
                          self.start_time, rectFit,
                          CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']))
         self.status = False
