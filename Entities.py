@@ -278,7 +278,7 @@ class Warriors(Moving_entity):
 class Archery(Moving_entity):
     def __init__(self, spawn_coords: tuple, player: Player, board: Board, add_to_group=True):
         if add_to_group:
-            super().__init__(cycle(load_images(CONFIG['warriors']['Moving_images'])), player,
+            super().__init__(cycle(load_images(CONFIG['archery']['Moving_images'])), player,
                              CONFIG.getint('archery', 'HP'),
                              CONFIG.getint('archery', 'HPMax'),
                              board,
