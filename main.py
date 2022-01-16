@@ -474,6 +474,8 @@ def main():
     pygame.init()
     pygame.font.init()
     pygame.display.set_caption('TowerGame')
+    pygame.mixer.music.load('data/notMinecraftSound.mp3')
+    pygame.mixer.music.play()
 
     start_screen()
     while True:
