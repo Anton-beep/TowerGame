@@ -327,7 +327,7 @@ def playing_level(level_path):
                                                     (SIZE[0] - 210, 110 + el[0] * 55),
                                                     pygame.Color('White'),
                                                     pygame.Color(42, 157, 143))] = el[1]
-                            else:
+                            elif chosen_spell == '':
                                 target_button = Toggle_button('задать новую цель',
                                                               (SIZE[0] - 210, 60),
                                                               pygame.Color('White'),
@@ -375,8 +375,6 @@ def playing_level(level_path):
             if spawn_ent is not False:
                 spawn_ent.setTargets(list(map(lambda x: x if x != 'playerTower' else PLAYER_TOWER,
                                               spawnEntityBot[1])))
-                print(list(map(lambda x: x if x != 'playerTower' else PLAYER_TOWER,
-                               spawnEntityBot[1])))
                 BOT_TOWER.money -= spawn_ent.cost
 
         if PLAYER_TOWER.hp <= 0:
