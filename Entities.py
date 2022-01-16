@@ -71,10 +71,13 @@ class Moving_entity(Entity):
         self.moving_images = moving_images
 
         self.image = next(moving_images)
+        self.imageRAW = self.image
         self.targets = [None]
         self.target_now = None
         self.checkpoint = None
 
+        self.movingImgInt = 5
+        self.movingImgCooldown = cycle(range(self.movingImgInt + 1, 0, -1))
         self.looking_at = 1
         self.road = None
         self.update_road_int = 50
@@ -119,7 +122,9 @@ class Moving_entity(Entity):
                     self.looking_at = 3
                 else:
                     self.looking_at = 1
-            self.image = pygame.transform.rotate(next(self.moving_images), self.looking_at * 90)
+            if next(self.movingImgCooldown) == self.movingImgInt:
+                self.imageRAW = next(self.moving_images)
+            self.image = pygame.transform.rotate(self.imageRAW, self.looking_at * 90)
         return True
 
     def set_new_road(self):
