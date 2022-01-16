@@ -255,7 +255,7 @@ def playing_level(level_path):
                                 PLAYER_TOWER.money -= poison.cost
                                 poison.damage_poison(time.time(), event.pos, LEVEL_RECT)
                                 yet_chose = False
-                        elif chosen_spell == 'heal' and poison.return_status() is True:
+                        elif chosen_spell == 'heal' and heal.return_status() is True:
                             if LEVEL_RECT.collidepoint(event.pos):
                                 PLAYER_TOWER.money -= heal.cost
                                 heal.damage_poison(time.time(), event.pos, LEVEL_RECT)
@@ -267,27 +267,21 @@ def playing_level(level_path):
                 el.kill()
             ent_button = dict()
 
-        if not (TowerTip and EntTip):
-            if type(selected_entity) == Tower:
-                TipButton.kill()
-                TipButton = Push_button(
-                    'Выберите вид отряда нажатием на кнопку призвать...',
-                    (10, SIZE[1] - 300),
-                    pygame.Color('White'),
-                    pygame.Color(231, 111, 81))
-                TowerTip = True
-            elif str(type(selected_entity))[:17] == "<class 'Entities.":
-                TipButton.kill()
-                TipButton = Push_button(
-                    'Нажмите на кнопку задать новую цель и нажмите на вражеские силы чтобы '
-                    'этот отряд начал атаковать или нажмите на точку на уровне',
-                    (10, SIZE[1] - 300),
-                    pygame.Color('White'),
-                    pygame.Color(231, 111, 81))
-                EntTip = True
-                TowerTip = False
-        else:
+        if type(selected_entity) == Tower:
             TipButton.kill()
+            TipButton = Push_button(
+                'Выберите вид отряда нажатием на кнопку призвать...',
+                (10, SIZE[1] - 300),
+                pygame.Color('White'),
+                pygame.Color(231, 111, 81))
+        elif str(type(selected_entity))[:17] == "<class 'Entities.":
+            TipButton.kill()
+            TipButton = Push_button(
+                'Нажмите на кнопку задать новую цель и нажмите на вражеские силы чтобы '
+                'этот отряд начал атаковать или нажмите на точку на уровне',
+                (10, SIZE[1] - 300),
+                pygame.Color('White'),
+                pygame.Color(231, 111, 81))
 
         if pygame.mouse.get_pressed(3)[0]:
 
