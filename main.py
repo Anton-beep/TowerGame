@@ -162,6 +162,14 @@ def level_selection() -> str:
             i = 10
             j += 50
 
+    finishImg = pygame.transform.scale(
+        load_image('data/backgroundLevelSelection.png'), SIZE)
+    MAIN_SCREEN.blit(finishImg, (0, 0))
+    ExitButton = Push_button('выйти из игры',
+                             (10, SIZE[1] - 30),
+                             pygame.Color('White'),
+                             pygame.Color(233, 196, 106))
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -172,8 +180,9 @@ def level_selection() -> str:
                     for group in SPRITES_GROUPS.values():
                         group.empty()
                     return 'data/levels/' + button.text + '.txt'
+            if ExitButton.click(pygame.mouse.get_pos()):
+                terminate()
 
-        MAIN_SCREEN.fill(SCREEN_COLOR)
         for ent in SPRITES_GROUPS['ENTITIES']:
             ent.update()
         for group in SPRITES_GROUPS.values():
