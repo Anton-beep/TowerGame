@@ -1,4 +1,6 @@
 import configparser
+import os.path
+
 import pygame
 from datetime import datetime as dt
 
@@ -33,5 +35,7 @@ PLAYER_TOWER = None
 
 LEVEL_RECT = None
 
+if not os.path.exists('results'):
+    os.mkdir('results')
 RES_FILE = open(f"results/res_{str(dt.now())[:-7].replace(' ', '_').replace(':', '+')}.txt",
                 'w', encoding='utf-8')
