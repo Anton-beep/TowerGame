@@ -219,6 +219,8 @@ def playing_level(level_path):
         (10, SIZE[1] - 300),
         pygame.Color('White'),
         pygame.Color(231, 111, 81))
+    TowerTip = False
+    EntTip = False
 
     while running:
         checkClickEntities = True
@@ -265,14 +267,15 @@ def playing_level(level_path):
                 el.kill()
             ent_button = dict()
 
-        if type(selected_entity) == Tower:
+        if type(selected_entity) == Tower and not TowerTip:
             TipButton.kill()
             TipButton = Push_button(
                 'Выберите вид отряда нажатием на кнопку призвать...',
                 (10, SIZE[1] - 300),
                 pygame.Color('White'),
                 pygame.Color(231, 111, 81))
-        elif str(type(selected_entity))[:17] == "<class 'Entities.":
+            TowerTip = True
+        elif str(type(selected_entity))[:17] == "<class 'Entities." and not EntTip:
             TipButton.kill()
             TipButton = Push_button(
                 'Нажмите на кнопку задать новую цель и нажмите на вражеские силы чтобы '
@@ -280,7 +283,7 @@ def playing_level(level_path):
                 (10, SIZE[1] - 300),
                 pygame.Color('White'),
                 pygame.Color(231, 111, 81))
-
+            EntTip = True
         if pygame.mouse.get_pressed(3)[0]:
 
             if flag_selecting_new_target and LEVEL_RECT.collidepoint(pygame.mouse.get_pos()):
@@ -515,6 +518,7 @@ def main():
     pygame.display.set_caption('TowerGame')
     pygame.mixer.music.load('data/notMinecraftSound.mp3')
     pygame.mixer.music.play(loops=-1)
+    pygame.mixer.music.set_volume(0.4)
 
     start_screen()
     while True:
