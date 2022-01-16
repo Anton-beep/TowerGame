@@ -101,8 +101,9 @@ class Moving_entity(Entity):
             if listCollide not in [[], [self]]:
                 self.rect = self.rect.move(*tuple(map(lambda x: -x, motion)))
                 # print(list(filter(lambda x: x.player != self.player, list_collide)))
-                self.targets.extend(list(filter(lambda x: str(type(x))[:17] == "<class 'Entities." and
-                                                          x.player != self.player, listCollide)))
+                self.targets.extend(list(filter(lambda x: str(type(x))[:17] == "<class 'Entities."
+                                                          and x.player != self.player and x.hp > 0,
+                                                listCollide)))
                 self.target_now = self.targets[-1]
                 return False
         if not draw:
@@ -330,7 +331,9 @@ class Archery(Moving_entity):
             if sqrt((ent.rect.center[0] - self.rect.center[0]) ** 2 + (
                     ent.rect.center[1] - self.rect.center[1])
                     ** 2) <= self.distance_to_attack and ent.player != self.player:
-                self.target_now = ent
+                if ent not in self.targets:
+                    self.targets.append(ent)
+                    self.target_now = self.targets[-1]
 
     def update(self):
         self.check_near_enemies()
@@ -347,7 +350,8 @@ class Archery(Moving_entity):
                     del self.targets[-1]
             else:
                 if sqrt((self.target_now.rect.center[0] - self.rect.center[0]) ** 2 + (
-                        self.target_now.rect.center[1] - self.rect.center[1]) ** 2) <= self.distance_to_attack:
+                        self.target_now.rect.center[1] - self.rect.center[1]) ** 2) \
+                        <= self.distance_to_attack:
                     if self.attack_target():
                         self.target_now = None
                         del self.targets[-1]

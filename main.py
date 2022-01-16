@@ -99,7 +99,8 @@ def load_level(path):
 
     board_width = len(level[0]) * cell_size
     board_height = len(level) * cell_size
-    MAIN_BOARD = Board((cell_size / 2, cell_size / 2), board_width // cell_size_board, board_height // cell_size_board,
+    MAIN_BOARD = Board((cell_size / 2, cell_size / 2), board_width // cell_size_board,
+                       board_height // cell_size_board,
                        cell_size_board)
 
     LEVEL_RECT = pygame.Rect(cell_size / 2, cell_size / 2,
@@ -116,18 +117,21 @@ def load_level(path):
 
 
 def start_screen():
-    start_screen_ = pygame.transform.scale(load_image(CONFIG['start_screen']['start_screen_image']), SIZE)
+    start_screen_ = pygame.transform.scale(load_image(CONFIG['start_screen']['start_screen_image']),
+                                           SIZE)
     MAIN_SCREEN.blit(start_screen_, (0, 0))
 
     quit_button = Push_button('ВЫЙТИ ИЗ ИГРЫ',
                               (SIZE[0] // 2 - 129, SIZE[1] - 100),
                               pygame.Color('Black'),
-                              load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26), (258, 80))
+                              load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26),
+                              (258, 80))
     MAIN_SCREEN.blit(quit_button.image, (SIZE[0] // 2 - 129, SIZE[1] - 100))
     start_button = Push_button('ИГРАТЬ',
                                (SIZE[0] // 2 - 129, SIZE[1] - 200),
                                pygame.Color('Black'),
-                               load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26), (258, 80))
+                               load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26),
+                               (258, 80))
     MAIN_SCREEN.blit(start_button.image, (SIZE[0] // 2 - 129, SIZE[1] - 200))
     while True:
         for event in pygame.event.get():
@@ -196,6 +200,7 @@ def playing_level(level_path):
                              (10, SIZE[1] - 30),
                              pygame.Color('White'),
                              pygame.Color(233, 196, 106))
+    RES_FILE.write(f"Запуск {level_path.split('/')[-1].split('.')[:-1][0]}\n\n")
 
     while running:
         for spell in SPRITES_GROUPS['SPELLS']:
@@ -239,7 +244,7 @@ def playing_level(level_path):
                     flag_iter = True
                     for el in SPRITES_GROUPS['ENTITIES']:
 
-                        if el.click(pygame.mouse.get_pos()) and el.player != selected_entity.player\
+                        if el.click(pygame.mouse.get_pos()) and el.player != selected_entity.player \
                                 and type(el) in AVAILABLE_ENTITIES + [Tower]:
                             selected_entity.set_target(el)
                             flag_iter = False
@@ -321,31 +326,27 @@ def playing_level(level_path):
                 spawn_ent.setTargets(list(map(lambda x: x if x != 'playerTower' else PLAYER_TOWER,
                                               spawnEntityBot[1])))
                 print(list(map(lambda x: x if x != 'playerTower' else PLAYER_TOWER,
-                                              spawnEntityBot[1])))
+                               spawnEntityBot[1])))
                 BOT_TOWER.money -= spawn_ent.cost
 
         if PLAYER_TOWER.hp <= 0:
-            finish_button = Push_button('БОТ ВЫИГРАЛ',
-                                        (SIZE[0] - SIZE[0] / 2, 500),
-                                        pygame.Color('White'),
-                                        pygame.Color(231, 111, 81))
+            levelWin = False
             RES_FILE.write(f"БОТ ВЫИГРАЛ\n\n")
             for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
                 sprite.kill()
             for sprite in CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']:
                 sprite.kill()
             running = False
+            break
         elif BOT_TOWER.hp <= 0:
-            finish_button = Push_button('ИГРОК ВЫИГРАЛ',
-                                        (SIZE[0] - SIZE[0] / 2, 500),
-                                        pygame.Color('White'),
-                                        pygame.Color(231, 111, 81))
+            levelWin = True
             RES_FILE.write(f"ИГРОК ВЫИГРАЛ\n\n")
             for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
                 sprite.kill()
             for sprite in CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']:
                 sprite.kill()
             running = False
+            break
 
         FORWARD_SCREEN.set_colorkey(SCREEN_COLOR)
         BACKGROUND.draw(MAIN_SCREEN)
@@ -384,14 +385,7 @@ def playing_level(level_path):
         CLOCK.tick(FPS)
         pygame.display.flip()
     if not force_exit:
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    terminate()
-            if pygame.mouse.get_pressed(3)[0]:
-                if finish_button.click(pygame.mouse.get_pos()):
-                    running = False
+        finish_screen(levelWin)
 
     running = True
     for group in SPRITES_GROUPS.values():
@@ -400,8 +394,50 @@ def playing_level(level_path):
     os.remove('data/background.png')
 
 
-def finish_screen():
-    pass
+def finish_screen(win):
+    for group in SPRITES_GROUPS.values():
+        for el in group:
+            el.kill()
+    quit_button = Push_button('ВЫЙТИ ИЗ ИГРЫ',
+                              (SIZE[0] // 2 - 129, SIZE[1] - 100),
+                              pygame.Color('Black'),
+                              load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26),
+                              (258, 80))
+    if win:
+        finishImg = pygame.transform.scale(
+            load_image(CONFIG['finish_screen']['win_finish_screen']), SIZE)
+        MAIN_SCREEN.blit(finishImg, (0, 0))
+
+        resButton = Push_button('ИГРОК ВЫИГРАЛ',
+                                (SIZE[0] // 2 - 129, SIZE[1] - 200),
+                                pygame.Color('Black'),
+                                load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26),
+                                (258, 80))
+    else:
+        finishImg = pygame.transform.scale(
+            load_image(CONFIG['finish_screen']['defeat_finish_screen']), SIZE)
+        MAIN_SCREEN.blit(finishImg, (0, 0))
+
+        resButton = Push_button('БОТ ВЫИГРАЛ',
+                                (SIZE[0] // 2 - 129, SIZE[1] - 200),
+                                pygame.Color('Black'),
+                                load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26),
+                                (258, 80))
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if quit_button.click(event.pos):
+                    terminate()
+                if resButton.click(event.pos):
+                    quit_button.kill()
+                    resButton.kill()
+                    return
+            SPRITES_GROUPS['BUTTONS'].draw(MAIN_SCREEN)
+        pygame.display.flip()
+        CLOCK.tick(FPS)
 
 
 def point_collide(coords: tuple, *groups):
