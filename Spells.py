@@ -13,7 +13,6 @@ from Entities import *
 class spell_circle(pygame.sprite.Sprite):
     def __init__(self, radius, coordinates: tuple, color, timing, tick, start_time,
                  rectFit, *group):
-        print(rectFit)
         super().__init__(*group)
         self.radius = radius
         self.image = pygame.Surface((2 * radius, 2 * radius),
