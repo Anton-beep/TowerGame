@@ -166,7 +166,7 @@ def level_selection() -> str:
         load_image('data/backgroundLevelSelection.png'), SIZE)
     MAIN_SCREEN.blit(finishImg, (0, 0))
     ExitButton = Push_button('выйти из игры',
-                             (10, SIZE[1] - 30),
+                             (SIZE[0] - 200, SIZE[1] - 30),
                              pygame.Color('White'),
                              pygame.Color(233, 196, 106))
 
@@ -253,7 +253,8 @@ def playing_level(level_path):
                     flag_iter = True
                     for el in SPRITES_GROUPS['ENTITIES']:
 
-                        if el.click(pygame.mouse.get_pos()) and el.player != selected_entity.player \
+                        if el.click(pygame.mouse.get_pos()) and \
+                                el.player != selected_entity.player \
                                 and type(el) in AVAILABLE_ENTITIES + [Tower]:
                             selected_entity.set_target(el)
                             flag_iter = False
