@@ -215,9 +215,11 @@ def playing_level(level_path):
         'Нажмите на вашу башню (красная полоска здоровья), чтобы призвать отряд',
         (10, SIZE[1] - 300),
         pygame.Color('White'),
-        pygame.Color(233, 196, 106))
+        pygame.Color(231, 111, 81))
 
     while running:
+        checkClickEntities = True
+
         for spell in SPRITES_GROUPS['SPELLS']:
             spell.update(time.time())
         for event in pygame.event.get():
@@ -267,14 +269,7 @@ def playing_level(level_path):
                 (10, SIZE[1] - 300),
                 pygame.Color('White'),
                 pygame.Color(231, 111, 81))
-        elif selected_entity is None:
-            TipButton.kill()
-            TipButton = Push_button(
-                'Нажмите на вашу башню (красная полоска здоровья), чтобы призвать отряд',
-                (10, SIZE[1] - 300),
-                pygame.Color('White'),
-                pygame.Color(231, 111, 81))
-        else:
+        elif str(type(selected_entity))[:17] == "<class 'Entities.":
             TipButton.kill()
             TipButton = Push_button(
                 'Нажмите на кнопку задать новую цель и нажмите на вражеские силы чтобы '
@@ -282,13 +277,13 @@ def playing_level(level_path):
                 (10, SIZE[1] - 300),
                 pygame.Color('White'),
                 pygame.Color(231, 111, 81))
+
         if pygame.mouse.get_pressed(3)[0]:
 
             if flag_selecting_new_target and LEVEL_RECT.collidepoint(pygame.mouse.get_pos()):
                 if selected_entity is not None:
                     flag_iter = True
                     for el in SPRITES_GROUPS['ENTITIES']:
-
                         if el.click(pygame.mouse.get_pos()) and \
                                 el.player != selected_entity.player \
                                 and type(el) in AVAILABLE_ENTITIES + [Tower]:
@@ -305,10 +300,10 @@ def playing_level(level_path):
                     if ent != selected_entity:
                         selected_entity = ent
                         flag_selecting_new_target = False
-                        for el in ent_button.keys():
-                            el.kill()
-                        ent_button = dict()
                         if selected_entity is not None and selected_entity.player == PLAYER:
+                            for el in ent_button.keys():
+                                el.kill()
+                            ent_button = dict()
                             health_but = Push_button(str(ent.hp), (SIZE[0] - 210, 10),
                                                      pygame.Color('White'),
                                                      load_image('data/buttonsImg/healthBarRed.png'))
