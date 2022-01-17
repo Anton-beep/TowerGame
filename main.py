@@ -1,61 +1,58 @@
+"""main"""
+
 import sys
 import os
-import pygame
-from pprint import pprint
-from collections import deque
 from random import choice
-from start import *
-from Players import *
-from Entities import *
-from Sprites import *
-from Buttons import *
-from Spells import *
-import threading
-from PIL import Image
-from math import ceil
+import pygame
+from PIL import Image, ImageFilter
+from players import *
+from entities import *
+from sprites import *
+from buttons import *
+from spells import *
 
-PLAYER = Player('blue')
-BOT_ENEMY = Bot('red')
+PLAYER = Player('red')
+BOT_ENEMY = Bot('blue')
 
 SPAWN_POINTS = {PLAYER: list(),
                 BOT_ENEMY: list()}
 
 FPS = CONFIG.getint('FPS', 'FPS')
 
-AVAILABLE_ENTITIES = [Warriors]
+AVAILABLE_ENTITIES = [Warriors, Archery]
 
 MAIN_BOARD = None
 
+SCREEN_COLOR = pygame.Color(38, 70, 83)
 
-class Tread(threading.Thread):
-    def __init__(self, ent):
-        super().__init__(name='bib')
-        self.ent = ent
-
-    def run(self):
-        self.ent.update()
+TEMP_BUTTONS = pygame.sprite.Group()
 
 
 def terminate():
+    """terminate"""
     pygame.quit()
     sys.exit()
 
 
 def player_tower(coords):
+    """need for spawn player_tower"""
     global PLAYER_TOWER
     PLAYER_TOWER = Tower(coords, PLAYER, MAIN_BOARD)
 
 
 def bot_tower(coords):
+    """need for spawn bot_tower"""
     global BOT_TOWER
     BOT_TOWER = Tower(coords, BOT_ENEMY, MAIN_BOARD)
 
 
 def spawn_point_player(coords):
+    """need to set spawnpoint for player"""
     SPAWN_POINTS[PLAYER].append(coords)
 
 
 def spawn_point_bot(coords):
+    """need to set spawnpoint for bot"""
     SPAWN_POINTS[BOT_ENEMY].append(coords)
 
 
@@ -70,16 +67,19 @@ SPRITES_LEVEL = {
 }
 
 
-def generateAndSetBackGroundLevel():
+def generate_and_set_background_level():
+    """generates background using PIL and sets background"""
     global BACKGROUND
+    global BACKGROUND_IMAGE
     images = list(map(lambda x: Image.open('data/backgroundImg/' + x),
                       os.listdir('data/backgroundImg')))
-    img = Image.new('RGB', LEVEL_RECT.size, 'black')
+    BACKGROUND_IMAGE = Image.new('RGB', LEVEL_RECT.size, 'black')
     for i in range(0, LEVEL_RECT.width, CONFIG.getint('window_size', 'CellLevel')):
         for j in range(0, LEVEL_RECT.height, CONFIG.getint('window_size', 'CellLevel')):
-            img.paste(choice(images), (i, j))
+            BACKGROUND_IMAGE.paste(choice(images), (i, j))
 
-    img.save('data/background.png')
+    BACKGROUND_IMAGE = BACKGROUND_IMAGE.filter(ImageFilter.BLUR)
+    BACKGROUND_IMAGE.save('data/background.png')
     BACKGROUND = pygame.sprite.Sprite()
     BACKGROUND.image = pygame.image.load('data/background.png')
     BACKGROUND.rect = LEVEL_RECT.copy()
@@ -93,34 +93,67 @@ def load_level(path):
     if not os.path.isfile(path):
         print(f'Level {path} not found')
         terminate()
-    with open(path, 'r', encoding='utf-8') as f:
-        level = list(map(lambda x: x.rstrip(), f.readlines()))
-    max_width = len(max(level, key=lambda x: len(x)))
+    with open(path, 'r', encoding='utf-8') as file:
+        level = list(map(lambda x: x.rstrip(), file.readlines()))
+    money = int(level[-1])
+    max_width = len(max(level, key=len))
     level = list(map(lambda x: list(x) + ['.' for _ in range(len(x), max_width)], level))
 
     cell_size = CONFIG.getint('window_size', 'CellLevel')
     cell_size_board = CONFIG.getint('window_size', 'CellSizeBoard')
 
-    board_width = len(level)
-    board_height = len(level[0])
-    MAIN_BOARD = Board((cell_size / 2, cell_size / 2), board_height, board_width, cell_size_board)
+    board_width = len(level[0]) * cell_size
+    board_height = len(level) * cell_size
+    MAIN_BOARD = Board((cell_size / 2, cell_size / 2), board_width // cell_size_board,
+                       board_height // cell_size_board,
+                       cell_size_board)
 
     LEVEL_RECT = pygame.Rect(cell_size / 2, cell_size / 2,
-                             max_width * cell_size, len(level) * cell_size)
+                             max_width * cell_size, (len(level) - 1) * cell_size)
     for row in enumerate(level):
-        for el in enumerate(row[1]):
-            if SPRITES_LEVEL[el[1]] is not None:
-
-                try:
-                    SPRITES_LEVEL[el[1]](((el[0] + 1) * cell_size, (row[0] + 1) * cell_size))
-                except TypeError:
-                    SPRITES_LEVEL[el[1]](((el[0] + 1) * cell_size, (row[0] + 1) * cell_size),
-                                         MAIN_BOARD)
-    generateAndSetBackGroundLevel()
+        if row[0] != len(level) - 1:
+            for el in enumerate(row[1]):
+                if SPRITES_LEVEL[el[1]] is not None:
+                    try:
+                        SPRITES_LEVEL[el[1]](((el[0] + 1) * cell_size, (row[0] + 1) * cell_size))
+                    except TypeError:
+                        SPRITES_LEVEL[el[1]](((el[0] + 1) * cell_size, (row[0] + 1) * cell_size),
+                                             MAIN_BOARD)
+    generate_and_set_background_level()
+    PLAYER_TOWER.money = money
 
 
 def start_screen():
-    pass
+    """start screen with pic"""
+    start_screen_ = pygame.transform.scale(load_image(CONFIG['start_screen']['start_screen_image']),
+                                           SIZE)
+    MAIN_SCREEN.blit(start_screen_, (0, 0))
+
+    quit_button = PushButton('ВЫЙТИ ИЗ ИГРЫ',
+                             (SIZE[0] // 2 - 129, SIZE[1] - 100),
+                             pygame.Color('Black'),
+                             load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26),
+                             (258, 80))
+    MAIN_SCREEN.blit(quit_button.image, (SIZE[0] // 2 - 129, SIZE[1] - 100))
+    start_button = PushButton('ИГРАТЬ',
+                              (SIZE[0] // 2 - 129, SIZE[1] - 200),
+                              pygame.Color('Black'),
+                              load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26),
+                              (258, 80))
+    MAIN_SCREEN.blit(start_button.image, (SIZE[0] // 2 - 129, SIZE[1] - 200))
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if quit_button.click(event.pos):
+                    terminate()
+                if start_button.click(event.pos):
+                    quit_button.kill()
+                    start_button.kill()
+                    return
+        pygame.display.flip()
+        CLOCK.tick(FPS)
 
 
 def level_selection() -> str:
@@ -129,14 +162,21 @@ def level_selection() -> str:
 
     i, j = 10, 10
     for level in sorted(map(lambda x: x.split('.')[0], os.listdir('data/levels'))):
-        levels_buttons.append(Push_button(level, (i, j), (100, 20),
-                                          pygame.font.Font(None, 24),
-                                          pygame.Color('White'),
-                                          pygame.Color('Red')))
+        levels_buttons.append(PushButton(level, (i, j),
+                                         pygame.Color('White'),
+                                         pygame.Color(42, 157, 143)))
         i += 200
         if i > SIZE[0]:
             i = 10
             j += 50
+
+    finish_img = pygame.transform.scale(
+        load_image('data/backgroundLevelSelection.png'), SIZE)
+    MAIN_SCREEN.blit(finish_img, (0, 0))
+    exit_button = PushButton('выйти из игры',
+                             (SIZE[0] - 200, SIZE[1] - 30),
+                             pygame.Color('White'),
+                             pygame.Color(233, 196, 106))
 
     while True:
         for event in pygame.event.get():
@@ -148,8 +188,9 @@ def level_selection() -> str:
                     for group in SPRITES_GROUPS.values():
                         group.empty()
                     return 'data/levels/' + button.text + '.txt'
+            if exit_button.click(pygame.mouse.get_pos()):
+                terminate()
 
-        MAIN_SCREEN.fill(pygame.Color('black'))
         for ent in SPRITES_GROUPS['ENTITIES']:
             ent.update()
         for group in SPRITES_GROUPS.values():
@@ -160,18 +201,50 @@ def level_selection() -> str:
 
 
 def playing_level(level_path):
+    """playing level"""
     yet_chose = False
     chosen_spell = ''
     load_level(level_path)
     selected_entity = None
-    ent_button = list()
+    ent_button = dict()
+    target_button = None
     flag_selecting_new_target = False
+    selected_entity = None
     running = True
+    force_exit = False
     poison = Poison_spell(SPRITES_GROUPS['SPELLS'])
     light = Lightning_spell(SPRITES_GROUPS['SPELLS'])
     heal = Heal_spell(SPRITES_GROUPS['SPELLS'])
+    exit_button = PushButton('выйти с уровня',
+                             (10, SIZE[1] - 30),
+                             pygame.Color('White'),
+                             pygame.Color(233, 196, 106))
+    RES_FILE.write(f"Запуск {level_path.split('/')[-1].split('.')[:-1][0]}\n\n")
+
+    PushButton(f"+здоровье {CONFIG.getint('heal', 'heal')}",
+               (40, 650),
+               pygame.Color('White'),
+               pygame.Color(233, 196, 106))
+
+    PushButton(f"урон {CONFIG.getint('poison', 'damage')}",
+               (260, 650),
+               pygame.Color('White'),
+               pygame.Color(233, 196, 106))
+
+    PushButton(f"урон {CONFIG.getint('lightning', 'damage')}",
+               (450, 650),
+               pygame.Color('White'),
+               pygame.Color(233, 196, 106))
+    tip_button = PushButton(
+        'Нажмите на вашу башню (красная полоска здоровья), чтобы призвать отряд',
+        (10, SIZE[1] - 300),
+        pygame.Color('White'),
+        pygame.Color(231, 111, 81))
+    tower_tip = False
+    ent_tip = False
 
     while running:
+
         for spell in SPRITES_GROUPS['SPELLS']:
             spell.update(time.time())
         for event in pygame.event.get():
@@ -181,25 +254,42 @@ def playing_level(level_path):
                 if pygame.mouse.get_pressed(3)[0]:
                     if yet_chose is False:
                         for spell in point_collide(event.pos, SPRITES_GROUPS['SPELLS']):
-                            a = spell.select_spell(yet_chose)
+                            some_info = spell.select_spell(yet_chose)
+                            if target_button is not None:
+                                target_button.reset_cooldown()
+                                flag_selecting_new_target = False
                             yet_chose = True
-                            chosen_spell = 'light' if a == 1 else 'poison' if a == 2 else 'heal'
+                            chosen_spell = 'light' if some_info == 1 else 'poison' \
+                                if some_info == 2 else 'heal'
                     else:
                         if chosen_spell == 'light' and light.return_status() is True:
                             for entity in point_collide(event.pos, SPRITES_GROUPS['ENTITIES']):
                                 if entity.player == BOT_ENEMY:
                                     PLAYER_TOWER.money -= light.cost
                                     lightning_damage = light.damage_light(time.time())
-                                    entity.get_damage(Entity, lightning_damage)
+                                    entity.get_damage(Entity, lightning_damage,
+                                                      'Заклинание молния',
+                                                      PLAYER.getRussianName())
                                     yet_chose = False
+                                    chosen_spell = ''
                         elif chosen_spell == 'poison' and poison.return_status() is True:
-                            PLAYER_TOWER.money -= poison.cost
-                            poison.damage_poison(time.time(), event.pos)
-                            yet_chose = False
-                        elif chosen_spell == 'heal' and poison.return_status() is True:
-                            PLAYER_TOWER.money -= heal.cost
-                            heal.damage_poison(time.time(), event.pos)
-                            yet_chose = False
+                            if LEVEL_RECT.collidepoint(event.pos):
+                                PLAYER_TOWER.money -= poison.cost
+                                poison.damage_poison(time.time(), event.pos, LEVEL_RECT)
+                                yet_chose = False
+                                chosen_spell = ''
+                        elif chosen_spell == 'heal' and heal.return_status() is True:
+                            if LEVEL_RECT.collidepoint(event.pos):
+                                PLAYER_TOWER.money -= heal.cost
+                                heal.damage_poison(time.time(), event.pos, LEVEL_RECT)
+                                yet_chose = False
+                                chosen_spell = ''
+
+        if selected_entity is not None and selected_entity.hp <= 0:
+            selected_entity = None
+            for el in ent_button:
+                el.kill()
+            ent_button = dict()
 
         if pygame.mouse.get_pressed(3)[0]:
 
@@ -207,7 +297,9 @@ def playing_level(level_path):
                 if selected_entity is not None:
                     flag_iter = True
                     for el in SPRITES_GROUPS['ENTITIES']:
-                        if el.click(pygame.mouse.get_pos()) and el.player != selected_entity.player:
+                        if el.click(pygame.mouse.get_pos()) and \
+                                el.player != selected_entity.player \
+                                and type(el) in AVAILABLE_ENTITIES + [Tower]:
                             selected_entity.set_target(el)
                             flag_iter = False
                             break
@@ -221,44 +313,70 @@ def playing_level(level_path):
                     if ent != selected_entity:
                         selected_entity = ent
                         flag_selecting_new_target = False
-                        for el in ent_button:
-                            el.kill()
-                        ent_button = list()
                         if selected_entity is not None and selected_entity.player == PLAYER:
-                            health_but = Push_button('hp: ' + str(ent.hp), (SIZE[0] - 210, 10),
-                                                     (200, 20),
-                                                     pygame.font.Font(None, 24),
-                                                     pygame.Color('White'),
-                                                     pygame.Color('Red'))
-                            ent_button.append(health_but)
-                            if type(selected_entity) == Tower:
-                                money_but = Push_button('money: ' + str(ent.money),
-                                                        (SIZE[0] - 210, 60),
-                                                        (200, 20),
-                                                        pygame.font.Font(None, 24),
-                                                        pygame.Color('White'),
-                                                        pygame.Color('Gold'))
-                                ent_button.append(money_but)
-                                for el in AVAILABLE_ENTITIES:
-                                    ent_button.append(
-                                        Push_button('spawn ' + el.__name__,
-                                                    (SIZE[0] - 210, 110),
-                                                    (200, 20),
-                                                    pygame.font.Font(None, 24),
+                            for el in ent_button:
+                                el.kill()
+                            ent_button = dict()
+                            health_but = PushButton(str(ent.hp), (SIZE[0] - 210, 10),
                                                     pygame.Color('White'),
-                                                    pygame.Color('Green')))
-                            else:
-                                target_button = Toggle_button('set new target', (SIZE[0] - 210, 60),
-                                                              (120, 20),
-                                                              pygame.font.Font(None, 24),
-                                                              pygame.Color('White'),
-                                                              pygame.Color('Green'))
-                                ent_button.append(target_button)
+                                                    load_image('data/buttonsImg/healthBarRed.png'))
+                            ent_button[health_but] = None
+                            name_but = PushButton(type(ent).getRussianName(), (SIZE[0] - 110, 10),
+                                                  pygame.Color('White'),
+                                                  pygame.Color(233, 196, 106))
+                            ent_button[name_but] = None
+                            if isinstance(selected_entity, Tower):
+                                tip_button.kill()
+                                if not tower_tip:
+                                    tip_button = PushButton(
+                                        'Выберите вид отряда нажатием на кнопку призвать...',
+                                        (10, SIZE[1] - 300),
+                                        pygame.Color('White'),
+                                        pygame.Color(231, 111, 81))
+                                    tower_tip = True
+                                if target_button is not None:
+                                    target_button.kill()
+                                money_but = PushButton('золото: ' + str(ent.money),
+                                                       (SIZE[0] - 210, 60),
+                                                       pygame.Color('White'),
+                                                       pygame.Color(233, 196, 106))
+                                ent_button[money_but] = None
+                                for el in enumerate(AVAILABLE_ENTITIES):
+                                    ent_button[
+                                        PushButton('призвать ' + el[1].getRussianName(),
+                                                   (SIZE[0] - 210, 110 + el[0] * 55),
+                                                   pygame.Color('White'),
+                                                   pygame.Color(42, 157, 143))] = el[1]
+                            elif chosen_spell == '':
+                                tip_button.kill()
+                                if not ent_tip:
+                                    tip_button = PushButton(
+                                        'Нажмите на кнопку задать новую цель и нажмите'
+                                        ' на вражеские силы чтобы '
+                                        'этот отряд начал атаковать или нажмите на точку на уровне',
+                                        (10, SIZE[1] - 300),
+                                        pygame.Color('White'),
+                                        pygame.Color(231, 111, 81))
+                                    ent_tip = True
+                                target_button = ToggleButton('задать новую цель',
+                                                             (SIZE[0] - 210, 60),
+                                                             pygame.Color('White'),
+                                                             pygame.Color(42, 157, 143))
+                                ent_button[target_button] = None
+
             for el in SPRITES_GROUPS['BUTTONS']:
                 if el.click(pygame.mouse.get_pos()):
-                    if type(selected_entity) == Tower:
-                        if el in ent_button[2:]:
-                            entity_type = eval(el.text.split()[1])
+                    if el == exit_button:
+                        force_exit = True
+                        for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
+                            sprite.kill()
+                        for sprite in CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']:
+                            sprite.kill()
+                        running = False
+                        break
+                    if isinstance(selected_entity, Tower):
+                        if el in list(ent_button.keys())[2:]:
+                            entity_type = ent_button[el]
                             if PLAYER_TOWER.money - entity_type(
                                     (0, 0), None, None, False).cost >= 0:
                                 spawn_ent = spawn_entity(entity_type, PLAYER)
@@ -267,67 +385,72 @@ def playing_level(level_path):
                     else:
                         if el == target_button:
                             flag_selecting_new_target = True
+                if not running:
+                    break
 
-        MAIN_SCREEN.fill(pygame.Color('black'))
+        MAIN_SCREEN.fill(SCREEN_COLOR)
+        FORWARD_SCREEN.fill(SCREEN_COLOR)
+        for sprite in TEMP_BUTTONS:
+            sprite.kill()
 
         if selected_entity is not None and selected_entity.player == PLAYER:
-            health_but.set_text('hp: ' + str(selected_entity.hp))
-            if type(selected_entity) == Tower:
-                money_but.set_text('money: ' + str(selected_entity.money))
+            health_but.set_text(str(selected_entity.hp))
+            if isinstance(selected_entity, Tower):
+                money_but.set_text('золото: ' + str(selected_entity.money))
 
         rand_ent = choice(AVAILABLE_ENTITIES)
-        if BOT_ENEMY.spawn_entity(SPRITES_GROUPS['ENTITIES'], rand_ent, BOT_TOWER.money):
+        spawn_entity_bot = BOT_ENEMY.spawn_entity(SPRITES_GROUPS['ENTITIES'], rand_ent, BOT_TOWER)
+        if BOT_TOWER.hp > 0 and spawn_entity_bot is not False:
             spawn_ent = spawn_entity(rand_ent, BOT_ENEMY)
             if spawn_ent is not False:
-                spawn_ent.set_target(PLAYER_TOWER)
+                spawn_ent.set_targets(list(map(lambda x: x if x != 'playerTower' else PLAYER_TOWER,
+                                               spawn_entity_bot[1])))
                 BOT_TOWER.money -= spawn_ent.cost
 
         if PLAYER_TOWER.hp <= 0:
-            finish_button = Push_button('BOT WINS',
-                                        (SIZE[0] - SIZE[0] / 2, 500),
-                                        (300, 100),
-                                        pygame.font.Font(None, 30),
-                                        pygame.Color('White'),
-                                        pygame.Color('Red'))
+            level_win = False
+            RES_FILE.write(f"БОТ ВЫИГРАЛ\n\n")
             for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
                 sprite.kill()
             for sprite in CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']:
                 sprite.kill()
             running = False
-        elif BOT_TOWER.hp <= 0:
-            finish_button = Push_button('PLAYER WINS',
-                                        (SIZE[0] - SIZE[0] / 2, 500),
-                                        (300, 100),
-                                        pygame.font.Font(None, 30),
-                                        pygame.Color('White'),
-                                        pygame.Color('Red'))
+            break
+        if BOT_TOWER.hp <= 0:
+            level_win = True
+            RES_FILE.write(f"ИГРОК ВЫИГРАЛ\n\n")
             for sprite in CIRCLE_SPRITES_GROUPS['POISON_CIRCLE']:
                 sprite.kill()
             for sprite in CIRCLE_SPRITES_GROUPS['HEAL_CIRCLE']:
                 sprite.kill()
             running = False
+            break
 
-        MAIN_SCREEN.fill(pygame.Color('black'))
+        FORWARD_SCREEN.set_colorkey(SCREEN_COLOR)
         BACKGROUND.draw(MAIN_SCREEN)
-        FORWARD_SCREEN.fill(pygame.Color('black'))
 
-        FORWARD_SCREEN.set_colorkey((0, 0, 0))
-
-        threads = []
         for ent in SPRITES_GROUPS['ENTITIES']:
-            threads.append(Tread(ent))
-
             # try:
             #     for coords in ent.road:
-            #         pygame.draw.circle(MAIN_SCREEN, pygame.Color('RED'), (coords[0] * MAIN_BOARD.cell_size,
-            #                                                               coords[1] * MAIN_BOARD.cell_size), 2)
+            #         pygame.draw.circle(MAIN_SCREEN, pygame.Color('RED'),
+            #         (coords[0] * MAIN_BOARD.cell_size,
+            #                        coords[1] * MAIN_BOARD.cell_size), 2)
             # except Exception:
             #     pass
 
-        for thread in threads:
-            thread.start()
-        for thread in threads:
-            thread.join()
+            ent.update()
+            if ent.player.team == 'red':
+                TEMP_BUTTONS.add(PushButton(f'{ent.hp}',
+                                            (ent.rect.x, ent.rect.y + ent.rect.height + 5),
+                                            pygame.Color('white'),
+                                            load_image('data/buttonsImg/healthBarRed.png')
+                                            ))
+            else:
+                TEMP_BUTTONS.add(PushButton(f'{ent.hp}',
+                                            (ent.rect.x, ent.rect.y + ent.rect.height + 5),
+                                            pygame.Color('white'),
+                                            load_image('data/buttonsImg/healthBarBlue.png')
+                                            ))
 
         for button in SPRITES_GROUPS['BUTTONS']:
             button.update()
@@ -339,27 +462,67 @@ def playing_level(level_path):
 
         CLOCK.tick(FPS)
         pygame.display.flip()
-
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()
-        if pygame.mouse.get_pressed(3)[0]:
-            if finish_button.click(pygame.mouse.get_pos()):
-                running = False
+    if not force_exit:
+        finish_screen(level_win)
 
     running = True
     for group in SPRITES_GROUPS.values():
         for el in group:
             el.kill()
+    os.remove('data/background.png')
 
 
-def finish_screen():
-    pass
+def finish_screen(win):
+    """finish screen"""
+    for group in SPRITES_GROUPS.values():
+        for el in group:
+            el.kill()
+    quit_button = PushButton('ВЫЙТИ ИЗ ИГРЫ',
+                             (SIZE[0] // 2 - 129, SIZE[1] - 100),
+                             pygame.Color('Black'),
+                             load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26),
+                             (258, 80))
+    if win:
+        finish_img = pygame.transform.scale(
+            load_image(CONFIG['finish_screen']['win_finish_screen']), SIZE)
+        MAIN_SCREEN.blit(finish_img, (0, 0))
+
+        res_button = PushButton('ИГРОК ВЫИГРАЛ',
+                                (SIZE[0] // 2 - 129, SIZE[1] - 200),
+                                pygame.Color('Black'),
+                                load_image('data/buttonsImg/table.jpg'),
+                                pygame.font.Font(None, 26),
+                                (258, 80))
+    else:
+        finish_img = pygame.transform.scale(
+            load_image(CONFIG['finish_screen']['defeat_finish_screen']), SIZE)
+        MAIN_SCREEN.blit(finish_img, (0, 0))
+
+        res_button = PushButton('БОТ ВЫИГРАЛ',
+                                (SIZE[0] // 2 - 129, SIZE[1] - 200),
+                                pygame.Color('Black'),
+                                load_image('data/buttonsImg/table.jpg'),
+                                pygame.font.Font(None, 26),
+                                (258, 80))
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if quit_button.click(event.pos):
+                    terminate()
+                if res_button.click(event.pos):
+                    quit_button.kill()
+                    res_button.kill()
+                    return
+            SPRITES_GROUPS['BUTTONS'].draw(MAIN_SCREEN)
+        pygame.display.flip()
+        CLOCK.tick(FPS)
 
 
 def point_collide(coords: tuple, *groups):
+    """check collide between point and groups"""
     ans = list()
     for el in map(lambda y: list(filter(lambda x: x.rect.collidepoint(coords), y)), groups):
         ans += el
@@ -367,12 +530,12 @@ def point_collide(coords: tuple, *groups):
 
 
 def spawn_entity(ent: type(Entity), player: Player):
+    """spawn entity in spawn points of player or bot"""
     for coords in SPAWN_POINTS[player]:
         flag = True
         for group in SPRITES_GROUPS.values():
             if not pygame.sprite.spritecollide(ent(coords, player,
-                                                   MAIN_BOARD, False), group, False)\
-                    in [[]]:
+                                                   MAIN_BOARD, False), group, False) in [[]]:
                 flag = False
                 break
         if flag:
@@ -382,9 +545,13 @@ def spawn_entity(ent: type(Entity), player: Player):
 
 
 def main():
+    """main function"""
     pygame.init()
     pygame.font.init()
     pygame.display.set_caption('TowerGame')
+    pygame.mixer.music.load('data/notMinecraftSound.mp3')
+    pygame.mixer.music.play(loops=-1)
+    pygame.mixer.music.set_volume(0.7)
 
     start_screen()
     while True:
