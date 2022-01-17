@@ -1,32 +1,40 @@
+"""boards"""
 import numpy as np
 
 from start import *
 
 
 class Cell:
+    """cell in board"""
     def get_int(self):
+        """returns int for road"""
         return 0
 
 
 class Empty(Cell):
+    """empty cell"""
     def get_int(self):
         return 0
 
     def __repr__(self):
+        """need to print empty cell"""
         return 'Empty'
 
 
-def check_sprite(collide_rect, el, i, j, int_board, exception_entities):
+def check_sprite(*args):
+    """checks sprite"""
+    collide_rect, el, i, j, int_board, exception_entities = args
     collide_rect.center = (i[1], j[1])
     if el not in exception_entities and el.rect.colliderect(collide_rect):
         try:
             if el.player == exception_entities[0].player:
                 int_board[i[0][0]][j[0][0]] = -1
-        except Exception:
+        except AttributeError:
             int_board[i[0][0]][j[0][0]] = -1
 
 
 def calculate_elem(board_int_copy: np.ndarray, coords: np.ndarray, i: int, j: int) -> bool:
+    """calculates element"""
     if board_int_copy[coords[0]][coords[1]] == 0:
         board_int_copy[coords[0]][coords[1]] = board_int_copy[i][j] + 1
         return True
@@ -34,20 +42,22 @@ def calculate_elem(board_int_copy: np.ndarray, coords: np.ndarray, i: int, j: in
 
 
 def get_neighbors(cell_coords, width, height):
+    """gets neighbors"""
     neighbors = list()
-    x, y = cell_coords
-    if x - 1 >= 0:
-        neighbors.append([x - 1, y])
-    if y - 1 >= 0:
-        neighbors.append([x, y - 1])
-    if x + 1 < width:
-        neighbors.append([x + 1, y])
-    if y + 1 < height:
-        neighbors.append([x, y + 1])
+    x_coord, y_coord = cell_coords
+    if x_coord - 1 >= 0:
+        neighbors.append([x_coord - 1, y_coord])
+    if y_coord - 1 >= 0:
+        neighbors.append([x_coord, y_coord - 1])
+    if x_coord + 1 < width:
+        neighbors.append([x_coord + 1, y_coord])
+    if y_coord + 1 < height:
+        neighbors.append([x_coord, y_coord + 1])
     return neighbors
 
 
 class Board:
+    """board class"""
     def __init__(self, coords_left_top, width, height, cell_size):
         self.left = coords_left_top[0]
         self.top = coords_left_top[1]
@@ -59,14 +69,16 @@ class Board:
         self.board = [[Empty()] * height for _ in range(width)]
 
     def get_cell(self, mouse_pos):
-        if not (self.left <= mouse_pos[0] <= self.left + self.cell_size * self.width):
+        """returns cell on click"""
+        if not self.left <= mouse_pos[0] <= self.left + self.cell_size * self.width:
             return None
-        if not (self.top <= mouse_pos[1] <= self.top + self.cell_size * self.height):
+        if not self.top <= mouse_pos[1] <= self.top + self.cell_size * self.height:
             return None
         return (mouse_pos[0] - self.left) // self.cell_size, \
                (mouse_pos[1] - self.top) // self.cell_size
 
     def get_int_board(self, collide_rect=pygame.Rect(0, 0, 1, 1), exception_entities=None):
+        """returns int board of level"""
         int_board = np.zeros((self.width, self.height))
         for i in np.ndenumerate(np.arange(self.width) * self.cell_size):
             for j in np.ndenumerate(np.arange(self.height) * self.cell_size):

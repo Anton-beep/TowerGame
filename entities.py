@@ -1,19 +1,16 @@
 """entities"""
 
-import time
+from itertools import cycle
+from math import copysign
+from random import randint
+from datetime import datetime as dt
 
-import numpy as np
 import pygame
 from start import *
 from boards import Cell, Board
 from sprites import *
-from itertools import cycle
-from collections import deque
 from players import Player
-from math import copysign
 from buttons import Button, Push_button
-from random import randint
-from datetime import datetime as dt
 
 
 class Entity(pygame.sprite.Sprite):
@@ -81,6 +78,7 @@ class MovingEntity(Entity):
         self.targets = [None]
         self.target_now = None
         self.checkpoint = None
+        self.rect = None
 
         self.moving_img_Int = 5
         self.moving_img_cooldown = cycle(range(self.moving_img_Int + 1, 0, -1))
@@ -108,14 +106,15 @@ class MovingEntity(Entity):
         """try to move self.rect with motion and controls looking_at"""
         self.rect = self.rect.move(motion)
         for group in SPRITES_GROUPS.values():
-            listCollide = pygame.sprite.spritecollide(self, group, False)
-            listCollide = list(filter(lambda x: type(x) != Push_button, listCollide))
-            if listCollide not in [[], [self]]:
+            list_collide = pygame.sprite.spritecollide(self, group, False)
+            list_collide = list(filter(lambda x: not isinstance(x, Push_button), list_collide))
+            if list_collide not in [[], [self]]:
                 self.rect = self.rect.move(*tuple(map(lambda x: -x, motion)))
                 # print(list(filter(lambda x: x.player != self.player, list_collide)))
-                self.targets.extend(list(filter(lambda x: str(type(x))[:17] == "<class 'Entities."
-                                                          and x.player != self.player
-                                                          and x.hp > 0, listCollide)))
+                filter_list = filter(lambda x: str(type(x))[:17] == "<class 'Entities."
+                                               and x.player != self.player
+                                               and x.hp > 0, list_collide)
+                self.targets.extend(list(filter_list))
                 self.target_now = self.targets[-1]
                 return False
         if not draw:
@@ -139,7 +138,7 @@ class MovingEntity(Entity):
     def set_new_road(self):
         """sets new road to target, using board"""
         args_for_board = [self]
-        if type(self.target_now) == tuple:
+        if isinstance(self.target_now, tuple):
             coords = self.target_now
         else:
             coords = self.target_now.rect.center
@@ -183,8 +182,8 @@ class MovingEntity(Entity):
         if self.checkpoint is None:
             self.set_new_checkpoint()
 
-            if type(self.target_now) == tuple and list(map(lambda x: x // self.board.cell_size,
-                                                           self.rect.center)) == \
+            if isinstance(self.target_now, tuple) and list(map(lambda x: x // self.board.cell_size,
+                                                               self.rect.center)) == \
                     list(map(lambda x: x // self.board.cell_size, self.target_now)):
                 self.checkpoint = self.target_now
         else:
@@ -271,12 +270,12 @@ class Warriors(MovingEntity):
     def update(self):
         """check enemies near, attack and move"""
         if self.target_now is not None:
-            if type(self.target_now) != tuple:
+            if isinstance(self.target_now, tuple):
                 if self.target_now.hp <= 0:
                     self.target_now = None
                     del self.targets[-1]
                     return None
-            if type(self.target_now) == tuple:
+            if isinstance(self.target_now, tuple):
                 self.move_to_target()
                 if self.rect.center == self.target_now:
                     self.target_now = None
@@ -416,9 +415,10 @@ class Tower(Entity):
                              CONFIG.getint('tower', 'HPMax'), board)
 
     def get_damage(self, entity, damage: int, *args) -> bool:
-        """"""
+        """gets damage"""
         self.lastAttacker = entity
-        super().get_damage(entity, damage, type(self).getRussianName(), *args)
+        return super().get_damage(entity, damage, type(self).getRussianName(), *args)
 
     def getRussianName():
+        """gets russian name"""
         return 'Башня'
