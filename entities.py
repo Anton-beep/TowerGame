@@ -111,7 +111,7 @@ class MovingEntity(Entity):
             if list_collide not in [[], [self]]:
                 self.rect = self.rect.move(*tuple(map(lambda x: -x, motion)))
                 # print(list(filter(lambda x: x.player != self.player, list_collide)))
-                filter_list = filter(lambda x: str(type(x))[:17] == "<class 'Entities."
+                filter_list = filter(lambda x: str(type(x))[:17].lower() == "<class 'entities."
                                                and x.player != self.player
                                                and x.hp > 0, list_collide)
                 self.targets.extend(list(filter_list))
@@ -270,7 +270,7 @@ class Warriors(MovingEntity):
     def update(self):
         """check enemies near, attack and move"""
         if self.target_now is not None:
-            if isinstance(self.target_now, tuple):
+            if not isinstance(self.target_now, tuple):
                 if self.target_now.hp <= 0:
                     self.target_now = None
                     del self.targets[-1]
