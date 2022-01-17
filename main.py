@@ -2,14 +2,14 @@
 
 import sys
 import os
-import pygame
 from random import choice
+import pygame
+from PIL import Image
 from Players import *
 from Entities import *
 from Sprites import *
 from Buttons import *
 from Spells import *
-from PIL import Image
 
 PLAYER = Player('red')
 BOT_ENEMY = Bot('blue')
@@ -258,7 +258,8 @@ def playing_level(level_path):
                                 target_button.reset_cooldown()
                                 flag_selecting_new_target = False
                             yet_chose = True
-                            chosen_spell = 'light' if some_info == 1 else 'poison' if some_info == 2 else 'heal'
+                            chosen_spell = 'light' if some_info == 1 else 'poison' \
+                                if some_info == 2 else 'heal'
                     else:
                         if chosen_spell == 'light' and light.return_status() is True:
                             for entity in point_collide(event.pos, SPRITES_GROUPS['ENTITIES']):
@@ -319,7 +320,11 @@ def playing_level(level_path):
                                                      pygame.Color('White'),
                                                      load_image('data/buttonsImg/healthBarRed.png'))
                             ent_button[health_but] = None
-                            if type(selected_entity) == Tower:
+                            name_but = Push_button(type(ent).getRussianName(), (SIZE[0] - 110, 10),
+                                                     pygame.Color('White'),
+                                                     pygame.Color(233, 196, 106))
+                            ent_button[name_but] = None
+                            if isinstance(selected_entity, Tower):
                                 tip_button.kill()
                                 if not tower_tip:
                                     tip_button = Push_button(
@@ -368,7 +373,7 @@ def playing_level(level_path):
                             sprite.kill()
                         running = False
                         break
-                    if type(selected_entity) == Tower:
+                    if isinstance(selected_entity, Tower):
                         if el in list(ent_button.keys())[2:]:
                             entity_type = ent_button[el]
                             if PLAYER_TOWER.money - entity_type(
@@ -389,7 +394,7 @@ def playing_level(level_path):
 
         if selected_entity is not None and selected_entity.player == PLAYER:
             health_but.set_text(str(selected_entity.hp))
-            if type(selected_entity) == Tower:
+            if isinstance(selected_entity, Tower):
                 money_but.set_text('золото: ' + str(selected_entity.money))
 
         rand_ent = choice(AVAILABLE_ENTITIES)
@@ -481,21 +486,23 @@ def finish_screen(win):
             load_image(CONFIG['finish_screen']['win_finish_screen']), SIZE)
         MAIN_SCREEN.blit(finish_img, (0, 0))
 
-        resButton = Push_button('ИГРОК ВЫИГРАЛ',
-                                (SIZE[0] // 2 - 129, SIZE[1] - 200),
-                                pygame.Color('Black'),
-                                load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26),
-                                (258, 80))
+        res_button = Push_button('ИГРОК ВЫИГРАЛ',
+                                 (SIZE[0] // 2 - 129, SIZE[1] - 200),
+                                 pygame.Color('Black'),
+                                 load_image('data/buttonsImg/table.jpg'),
+                                 pygame.font.Font(None, 26),
+                                 (258, 80))
     else:
         finish_img = pygame.transform.scale(
             load_image(CONFIG['finish_screen']['defeat_finish_screen']), SIZE)
         MAIN_SCREEN.blit(finish_img, (0, 0))
 
-        resButton = Push_button('БОТ ВЫИГРАЛ',
-                                (SIZE[0] // 2 - 129, SIZE[1] - 200),
-                                pygame.Color('Black'),
-                                load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26),
-                                (258, 80))
+        res_button = Push_button('БОТ ВЫИГРАЛ',
+                                 (SIZE[0] // 2 - 129, SIZE[1] - 200),
+                                 pygame.Color('Black'),
+                                 load_image('data/buttonsImg/table.jpg'),
+                                 pygame.font.Font(None, 26),
+                                 (258, 80))
 
     while True:
         for event in pygame.event.get():
@@ -504,9 +511,9 @@ def finish_screen(win):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if quit_button.click(event.pos):
                     terminate()
-                if resButton.click(event.pos):
+                if res_button.click(event.pos):
                     quit_button.kill()
-                    resButton.kill()
+                    res_button.kill()
                     return
             SPRITES_GROUPS['BUTTONS'].draw(MAIN_SCREEN)
         pygame.display.flip()
@@ -514,6 +521,7 @@ def finish_screen(win):
 
 
 def point_collide(coords: tuple, *groups):
+    """check collide between point and groups"""
     ans = list()
     for el in map(lambda y: list(filter(lambda x: x.rect.collidepoint(coords), y)), groups):
         ans += el
@@ -521,6 +529,7 @@ def point_collide(coords: tuple, *groups):
 
 
 def spawn_entity(ent: type(Entity), player: Player):
+    """spawn entity in spawn points of player or bot"""
     for coords in SPAWN_POINTS[player]:
         flag = True
         for group in SPRITES_GROUPS.values():
@@ -535,6 +544,7 @@ def spawn_entity(ent: type(Entity), player: Player):
 
 
 def main():
+    """main function"""
     pygame.init()
     pygame.font.init()
     pygame.display.set_caption('TowerGame')
