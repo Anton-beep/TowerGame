@@ -7,7 +7,7 @@ from pygame.sprite import Sprite
 
 from start import SPRITES_GROUPS, CONFIG
 from main import *
-from Entities import *
+from entities import *
 
 
 class spell_circle(pygame.sprite.Sprite):

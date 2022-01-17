@@ -5,11 +5,11 @@ import os
 from random import choice
 import pygame
 from PIL import Image
-from Players import *
-from Entities import *
-from Sprites import *
-from Buttons import *
-from Spells import *
+from players import *
+from entities import *
+from sprites import *
+from buttons import *
+from spells import *
 
 PLAYER = Player('red')
 BOT_ENEMY = Bot('blue')
@@ -321,8 +321,8 @@ def playing_level(level_path):
                                                      load_image('data/buttonsImg/healthBarRed.png'))
                             ent_button[health_but] = None
                             name_but = Push_button(type(ent).getRussianName(), (SIZE[0] - 110, 10),
-                                                     pygame.Color('White'),
-                                                     pygame.Color(233, 196, 106))
+                                                   pygame.Color('White'),
+                                                   pygame.Color(233, 196, 106))
                             ent_button[name_but] = None
                             if isinstance(selected_entity, Tower):
                                 tip_button.kill()
@@ -402,8 +402,8 @@ def playing_level(level_path):
         if BOT_TOWER.hp > 0 and spawn_entity_bot is not False:
             spawn_ent = spawn_entity(rand_ent, BOT_ENEMY)
             if spawn_ent is not False:
-                spawn_ent.setTargets(list(map(lambda x: x if x != 'playerTower' else PLAYER_TOWER,
-                                              spawn_entity_bot[1])))
+                spawn_ent.set_targets(list(map(lambda x: x if x != 'playerTower' else PLAYER_TOWER,
+                                               spawn_entity_bot[1])))
                 BOT_TOWER.money -= spawn_ent.cost
 
         if PLAYER_TOWER.hp <= 0:
@@ -550,7 +550,7 @@ def main():
     pygame.display.set_caption('TowerGame')
     pygame.mixer.music.load('data/notMinecraftSound.mp3')
     pygame.mixer.music.play(loops=-1)
-    pygame.mixer.music.set_volume(0.4)
+    pygame.mixer.music.set_volume(0.7)
 
     start_screen()
     while True:

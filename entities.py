@@ -1,20 +1,24 @@
+"""entities"""
+
 import time
 
 import numpy as np
 import pygame
 from start import *
 from boards import Cell, Board
-from Sprites import *
+from sprites import *
 from itertools import cycle
 from collections import deque
-from Players import Player
+from players import Player
 from math import copysign
-from Buttons import Button, Push_button
+from buttons import Button, Push_button
 from random import randint
 from datetime import datetime as dt
 
 
 class Entity(pygame.sprite.Sprite):
+    """standard entity"""
+
     def __init__(self, player, hp, max_hp, board: Board, group=None):
         if group is not None:
             super().__init__(group)
@@ -29,31 +33,30 @@ class Entity(pygame.sprite.Sprite):
         """Increases hp for entity, if self.hp + hp_get > self.max_hp then self.hp = self.max_hp"""
         self.hp = min(self.max_hp, hp_get)
 
-    def get_damage(self, entity, damage: int, selfEntityName, entityName=None,
-                   attackPlayer=None) -> bool:
+    def get_damage(self, entity, damage: int, self_entity_name, entity_name=None,
+                   attack_player=None) -> bool:
         """Decreases hp for entity, if self.hp - damage <= 0 then returns True, which means dead"""
         self.hp -= damage + randint(round(-damage * 0.2), round(damage * 0.2))
         if self.hp <= 0:
             self.kill()
             print()
-            if attackPlayer is None:
-                attackPlayer = entity.player.getRussianName()
-            if entityName is None:
-                entityName = type(entity).getRussianName()
+            if attack_player is None:
+                attack_player = entity.player.getRussianName()
+            if entity_name is None:
+                entity_name = type(entity).getRussianName()
 
-            if entityName == 'Игрок':
-                RES_FILE.write(f'[{str(dt.now())}] : {attackPlayer} убил {selfEntityName} игрока '
+            if entity_name == 'Игрок':
+                RES_FILE.write(f'[{str(dt.now())}] : {attack_player} убил {self_entity_name} '
+                               f'игрока '
                                f'{self.player.getRussianName()}\n')
             else:
-                RES_FILE.write(f'[{str(dt.now())}] : {attackPlayer} убил {selfEntityName} '
-                               f'при помощи {entityName}\n')
+                RES_FILE.write(f'[{str(dt.now())}] : {attack_player} убил {self_entity_name} '
+                               f'при помощи {entity_name}\n')
             return True
         return False
 
-    def update(self):
-        pass
-
     def get_int(self):
+        """int for board (not used)"""
         return -1
 
     def get_intersection(self, other, dist) -> bool:
@@ -61,23 +64,26 @@ class Entity(pygame.sprite.Sprite):
         return get_intersection_two_rects(self.rect, other.rect, dist)
 
     def click(self, coords) -> bool:
+        """check if coords of point collides self"""
         return self.rect.collidepoint(coords)
 
 
-class Moving_entity(Entity):
+class MovingEntity(Entity):
+    """Standard Entity, but can move"""
+
     def __init__(self, moving_images: cycle, player: Player, hp, max_hp, board, group=None):
         super().__init__(player, hp, max_hp, board, group)
 
         self.moving_images = moving_images
 
         self.image = next(moving_images)
-        self.imageRAW = self.image
+        self.image_raw = self.image
         self.targets = [None]
         self.target_now = None
         self.checkpoint = None
 
-        self.movingImgInt = 5
-        self.movingImgCooldown = cycle(range(self.movingImgInt + 1, 0, -1))
+        self.moving_img_Int = 5
+        self.moving_img_cooldown = cycle(range(self.moving_img_Int + 1, 0, -1))
         self.looking_at = 1
         self.road = None
         self.update_road_int = 50
@@ -85,18 +91,21 @@ class Moving_entity(Entity):
         # looking positions: 3 - top, 0 - right, 1 - bottom, 2 - left
 
     def set_target(self, new):
+        """sets new target for entity and deletes old targets"""
         self.targets = [None, new]
         self.road = None
         self.checkpoint = None
         self.target_now = self.targets[-1]
 
-    def setTargets(self, new):
+    def set_targets(self, new):
+        """sets new targets for entity and deletes old targets"""
         self.targets = [None] + new[::-1]
         self.road = None
         self.checkpoint = None
         self.target_now = self.targets[-1]
 
     def move(self, motion, draw=True):
+        """try to move self.rect with motion and controls looking_at"""
         self.rect = self.rect.move(motion)
         for group in SPRITES_GROUPS.values():
             listCollide = pygame.sprite.spritecollide(self, group, False)
@@ -105,8 +114,8 @@ class Moving_entity(Entity):
                 self.rect = self.rect.move(*tuple(map(lambda x: -x, motion)))
                 # print(list(filter(lambda x: x.player != self.player, list_collide)))
                 self.targets.extend(list(filter(lambda x: str(type(x))[:17] == "<class 'Entities."
-                                                          and x.player != self.player and x.hp > 0,
-                                                listCollide)))
+                                                          and x.player != self.player
+                                                          and x.hp > 0, listCollide)))
                 self.target_now = self.targets[-1]
                 return False
         if not draw:
@@ -122,12 +131,13 @@ class Moving_entity(Entity):
                     self.looking_at = 3
                 else:
                     self.looking_at = 1
-            if next(self.movingImgCooldown) == self.movingImgInt:
-                self.imageRAW = next(self.moving_images)
-            self.image = pygame.transform.rotate(self.imageRAW, self.looking_at * 90)
+            if next(self.moving_img_cooldown) == self.moving_img_Int:
+                self.image_raw = next(self.moving_images)
+            self.image = pygame.transform.rotate(self.image_raw, self.looking_at * 90)
         return True
 
     def set_new_road(self):
+        """sets new road to target, using board"""
         args_for_board = [self]
         if type(self.target_now) == tuple:
             coords = self.target_now
@@ -142,6 +152,7 @@ class Moving_entity(Entity):
         )
 
     def set_new_checkpoint(self):
+        """sets new checkpoint using road"""
         # need to create road for entity
         self.checkpoint = None
         if self.road is None or len(self.road) < 2:
@@ -162,6 +173,7 @@ class Moving_entity(Entity):
             self.move_to_target()
 
     def move_to_target(self):
+        """moves to target"""
         if self.update_road_iter < self.update_road_int:
             self.update_road_iter += 1
 
@@ -193,7 +205,9 @@ class Moving_entity(Entity):
             return flag
 
 
-class Warriors(Moving_entity):
+class Warriors(MovingEntity):
+    """warriors"""
+
     def __init__(self, spawn_coords: tuple, player: Player, board: Board, add_to_group=True):
         if add_to_group:
             super().__init__(cycle(load_images(CONFIG['warriors']['Moving_images'])), player,
@@ -249,11 +263,13 @@ class Warriors(Moving_entity):
         return False
 
     def move_to_target(self):
+        """try to move to target"""
         if next(self.speed_cooldown) == self.speed:
             return super().move_to_target()
         return False
 
     def update(self):
+        """check enemies near, attack and move"""
         if self.target_now is not None:
             if type(self.target_now) != tuple:
                 if self.target_now.hp <= 0:
@@ -277,10 +293,13 @@ class Warriors(Moving_entity):
             self.image = pygame.transform.rotate(next(self.standing_image), self.looking_at * 90)
 
     def getRussianName():
+        """gets russian name"""
         return 'Воины'
 
 
-class Archery(Moving_entity):
+class Archery(MovingEntity):
+    """archery"""
+
     def __init__(self, spawn_coords: tuple, player: Player, board: Board, add_to_group=True):
         if add_to_group:
             super().__init__(cycle(load_images(CONFIG['archery']['Moving_images'])), player,
@@ -327,11 +346,13 @@ class Archery(Moving_entity):
         return False
 
     def move_to_target(self):
+        """try to move to target"""
         if next(self.speed_cooldown) == self.speed:
             return super().move_to_target()
         return False
 
     def check_near_enemies(self):
+        """check enemies"""
         for ent in SPRITES_GROUPS['ENTITIES']:
             if sqrt((ent.rect.center[0] - self.rect.center[0]) ** 2 + (
                     ent.rect.center[1] - self.rect.center[1])
@@ -341,14 +362,15 @@ class Archery(Moving_entity):
                     self.target_now = self.targets[-1]
 
     def update(self):
+        """update"""
         self.check_near_enemies()
         if self.target_now is not None:
-            if type(self.target_now) != tuple:
+            if not isinstance(self.target_now, tuple):
                 if self.target_now.hp <= 0:
                     self.target_now = None
                     del self.targets[-1]
                     return None
-            if type(self.target_now) == tuple:
+            if isinstance(self.target_now, tuple):
                 self.move_to_target()
                 if self.rect.center == self.target_now:
                     self.target_now = None
@@ -367,10 +389,13 @@ class Archery(Moving_entity):
             self.image = pygame.transform.rotate(next(self.standing_image), self.looking_at * 90)
 
     def getRussianName():
+        """gets russian name"""
         return 'Лучники'
 
 
 class Tower(Entity):
+    """tower"""
+
     def __init__(self, spawn_coords: tuple, player: Player, board: Board, add_to_group=True):
         self.standing_image = load_image('data/tower/standing.png')
         self.image = self.standing_image
@@ -391,6 +416,7 @@ class Tower(Entity):
                              CONFIG.getint('tower', 'HPMax'), board)
 
     def get_damage(self, entity, damage: int, *args) -> bool:
+        """"""
         self.lastAttacker = entity
         super().get_damage(entity, damage, type(self).getRussianName(), *args)
 
