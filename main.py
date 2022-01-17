@@ -128,17 +128,17 @@ def start_screen():
                                            SIZE)
     MAIN_SCREEN.blit(start_screen_, (0, 0))
 
-    quit_button = Push_button('ВЫЙТИ ИЗ ИГРЫ',
-                              (SIZE[0] // 2 - 129, SIZE[1] - 100),
+    quit_button = PushButton('ВЫЙТИ ИЗ ИГРЫ',
+                             (SIZE[0] // 2 - 129, SIZE[1] - 100),
+                             pygame.Color('Black'),
+                             load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26),
+                             (258, 80))
+    MAIN_SCREEN.blit(quit_button.image, (SIZE[0] // 2 - 129, SIZE[1] - 100))
+    start_button = PushButton('ИГРАТЬ',
+                              (SIZE[0] // 2 - 129, SIZE[1] - 200),
                               pygame.Color('Black'),
                               load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26),
                               (258, 80))
-    MAIN_SCREEN.blit(quit_button.image, (SIZE[0] // 2 - 129, SIZE[1] - 100))
-    start_button = Push_button('ИГРАТЬ',
-                               (SIZE[0] // 2 - 129, SIZE[1] - 200),
-                               pygame.Color('Black'),
-                               load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26),
-                               (258, 80))
     MAIN_SCREEN.blit(start_button.image, (SIZE[0] // 2 - 129, SIZE[1] - 200))
     while True:
         for event in pygame.event.get():
@@ -161,9 +161,9 @@ def level_selection() -> str:
 
     i, j = 10, 10
     for level in sorted(map(lambda x: x.split('.')[0], os.listdir('data/levels'))):
-        levels_buttons.append(Push_button(level, (i, j),
-                                          pygame.Color('White'),
-                                          pygame.Color(42, 157, 143)))
+        levels_buttons.append(PushButton(level, (i, j),
+                                         pygame.Color('White'),
+                                         pygame.Color(42, 157, 143)))
         i += 200
         if i > SIZE[0]:
             i = 10
@@ -172,10 +172,10 @@ def level_selection() -> str:
     finish_img = pygame.transform.scale(
         load_image('data/backgroundLevelSelection.png'), SIZE)
     MAIN_SCREEN.blit(finish_img, (0, 0))
-    exit_button = Push_button('выйти из игры',
-                              (SIZE[0] - 200, SIZE[1] - 30),
-                              pygame.Color('White'),
-                              pygame.Color(233, 196, 106))
+    exit_button = PushButton('выйти из игры',
+                             (SIZE[0] - 200, SIZE[1] - 30),
+                             pygame.Color('White'),
+                             pygame.Color(233, 196, 106))
 
     while True:
         for event in pygame.event.get():
@@ -214,27 +214,27 @@ def playing_level(level_path):
     poison = Poison_spell(SPRITES_GROUPS['SPELLS'])
     light = Lightning_spell(SPRITES_GROUPS['SPELLS'])
     heal = Heal_spell(SPRITES_GROUPS['SPELLS'])
-    exit_button = Push_button('выйти с уровня',
-                              (10, SIZE[1] - 30),
-                              pygame.Color('White'),
-                              pygame.Color(233, 196, 106))
+    exit_button = PushButton('выйти с уровня',
+                             (10, SIZE[1] - 30),
+                             pygame.Color('White'),
+                             pygame.Color(233, 196, 106))
     RES_FILE.write(f"Запуск {level_path.split('/')[-1].split('.')[:-1][0]}\n\n")
 
-    Push_button(f"+здоровье {CONFIG.getint('heal', 'heal')}",
-                (40, 650),
-                pygame.Color('White'),
-                pygame.Color(233, 196, 106))
+    PushButton(f"+здоровье {CONFIG.getint('heal', 'heal')}",
+               (40, 650),
+               pygame.Color('White'),
+               pygame.Color(233, 196, 106))
 
-    Push_button(f"урон {CONFIG.getint('poison', 'damage')}",
-                (260, 650),
-                pygame.Color('White'),
-                pygame.Color(233, 196, 106))
+    PushButton(f"урон {CONFIG.getint('poison', 'damage')}",
+               (260, 650),
+               pygame.Color('White'),
+               pygame.Color(233, 196, 106))
 
-    Push_button(f"урон {CONFIG.getint('lightning', 'damage')}",
-                (450, 650),
-                pygame.Color('White'),
-                pygame.Color(233, 196, 106))
-    tip_button = Push_button(
+    PushButton(f"урон {CONFIG.getint('lightning', 'damage')}",
+               (450, 650),
+               pygame.Color('White'),
+               pygame.Color(233, 196, 106))
+    tip_button = PushButton(
         'Нажмите на вашу башню (красная полоска здоровья), чтобы призвать отряд',
         (10, SIZE[1] - 300),
         pygame.Color('White'),
@@ -316,18 +316,18 @@ def playing_level(level_path):
                             for el in ent_button:
                                 el.kill()
                             ent_button = dict()
-                            health_but = Push_button(str(ent.hp), (SIZE[0] - 210, 10),
-                                                     pygame.Color('White'),
-                                                     load_image('data/buttonsImg/healthBarRed.png'))
+                            health_but = PushButton(str(ent.hp), (SIZE[0] - 210, 10),
+                                                    pygame.Color('White'),
+                                                    load_image('data/buttonsImg/healthBarRed.png'))
                             ent_button[health_but] = None
-                            name_but = Push_button(type(ent).getRussianName(), (SIZE[0] - 110, 10),
-                                                   pygame.Color('White'),
-                                                   pygame.Color(233, 196, 106))
+                            name_but = PushButton(type(ent).getRussianName(), (SIZE[0] - 110, 10),
+                                                  pygame.Color('White'),
+                                                  pygame.Color(233, 196, 106))
                             ent_button[name_but] = None
                             if isinstance(selected_entity, Tower):
                                 tip_button.kill()
                                 if not tower_tip:
-                                    tip_button = Push_button(
+                                    tip_button = PushButton(
                                         'Выберите вид отряда нажатием на кнопку призвать...',
                                         (10, SIZE[1] - 300),
                                         pygame.Color('White'),
@@ -335,21 +335,21 @@ def playing_level(level_path):
                                     tower_tip = True
                                 if target_button is not None:
                                     target_button.kill()
-                                money_but = Push_button('золото: ' + str(ent.money),
-                                                        (SIZE[0] - 210, 60),
-                                                        pygame.Color('White'),
-                                                        pygame.Color(233, 196, 106))
+                                money_but = PushButton('золото: ' + str(ent.money),
+                                                       (SIZE[0] - 210, 60),
+                                                       pygame.Color('White'),
+                                                       pygame.Color(233, 196, 106))
                                 ent_button[money_but] = None
                                 for el in enumerate(AVAILABLE_ENTITIES):
                                     ent_button[
-                                        Push_button('призвать ' + el[1].getRussianName(),
-                                                    (SIZE[0] - 210, 110 + el[0] * 55),
-                                                    pygame.Color('White'),
-                                                    pygame.Color(42, 157, 143))] = el[1]
+                                        PushButton('призвать ' + el[1].getRussianName(),
+                                                   (SIZE[0] - 210, 110 + el[0] * 55),
+                                                   pygame.Color('White'),
+                                                   pygame.Color(42, 157, 143))] = el[1]
                             elif chosen_spell == '':
                                 tip_button.kill()
                                 if not ent_tip:
-                                    tip_button = Push_button(
+                                    tip_button = PushButton(
                                         'Нажмите на кнопку задать новую цель и нажмите'
                                         ' на вражеские силы чтобы '
                                         'этот отряд начал атаковать или нажмите на точку на уровне',
@@ -357,10 +357,10 @@ def playing_level(level_path):
                                         pygame.Color('White'),
                                         pygame.Color(231, 111, 81))
                                     ent_tip = True
-                                target_button = Toggle_button('задать новую цель',
-                                                              (SIZE[0] - 210, 60),
-                                                              pygame.Color('White'),
-                                                              pygame.Color(42, 157, 143))
+                                target_button = ToggleButton('задать новую цель',
+                                                             (SIZE[0] - 210, 60),
+                                                             pygame.Color('White'),
+                                                             pygame.Color(42, 157, 143))
                                 ent_button[target_button] = None
 
             for el in SPRITES_GROUPS['BUTTONS']:
@@ -439,17 +439,17 @@ def playing_level(level_path):
 
             ent.update()
             if ent.player.team == 'red':
-                TEMP_BUTTONS.add(Push_button(f'{ent.hp}',
-                                             (ent.rect.x, ent.rect.y + ent.rect.height + 5),
-                                             pygame.Color('white'),
-                                             load_image('data/buttonsImg/healthBarRed.png')
-                                             ))
+                TEMP_BUTTONS.add(PushButton(f'{ent.hp}',
+                                            (ent.rect.x, ent.rect.y + ent.rect.height + 5),
+                                            pygame.Color('white'),
+                                            load_image('data/buttonsImg/healthBarRed.png')
+                                            ))
             else:
-                TEMP_BUTTONS.add(Push_button(f'{ent.hp}',
-                                             (ent.rect.x, ent.rect.y + ent.rect.height + 5),
-                                             pygame.Color('white'),
-                                             load_image('data/buttonsImg/healthBarBlue.png')
-                                             ))
+                TEMP_BUTTONS.add(PushButton(f'{ent.hp}',
+                                            (ent.rect.x, ent.rect.y + ent.rect.height + 5),
+                                            pygame.Color('white'),
+                                            load_image('data/buttonsImg/healthBarBlue.png')
+                                            ))
 
         for button in SPRITES_GROUPS['BUTTONS']:
             button.update()
@@ -476,33 +476,33 @@ def finish_screen(win):
     for group in SPRITES_GROUPS.values():
         for el in group:
             el.kill()
-    quit_button = Push_button('ВЫЙТИ ИЗ ИГРЫ',
-                              (SIZE[0] // 2 - 129, SIZE[1] - 100),
-                              pygame.Color('Black'),
-                              load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26),
-                              (258, 80))
+    quit_button = PushButton('ВЫЙТИ ИЗ ИГРЫ',
+                             (SIZE[0] // 2 - 129, SIZE[1] - 100),
+                             pygame.Color('Black'),
+                             load_image('data/buttonsImg/table.jpg'), pygame.font.Font(None, 26),
+                             (258, 80))
     if win:
         finish_img = pygame.transform.scale(
             load_image(CONFIG['finish_screen']['win_finish_screen']), SIZE)
         MAIN_SCREEN.blit(finish_img, (0, 0))
 
-        res_button = Push_button('ИГРОК ВЫИГРАЛ',
-                                 (SIZE[0] // 2 - 129, SIZE[1] - 200),
-                                 pygame.Color('Black'),
-                                 load_image('data/buttonsImg/table.jpg'),
-                                 pygame.font.Font(None, 26),
-                                 (258, 80))
+        res_button = PushButton('ИГРОК ВЫИГРАЛ',
+                                (SIZE[0] // 2 - 129, SIZE[1] - 200),
+                                pygame.Color('Black'),
+                                load_image('data/buttonsImg/table.jpg'),
+                                pygame.font.Font(None, 26),
+                                (258, 80))
     else:
         finish_img = pygame.transform.scale(
             load_image(CONFIG['finish_screen']['defeat_finish_screen']), SIZE)
         MAIN_SCREEN.blit(finish_img, (0, 0))
 
-        res_button = Push_button('БОТ ВЫИГРАЛ',
-                                 (SIZE[0] // 2 - 129, SIZE[1] - 200),
-                                 pygame.Color('Black'),
-                                 load_image('data/buttonsImg/table.jpg'),
-                                 pygame.font.Font(None, 26),
-                                 (258, 80))
+        res_button = PushButton('БОТ ВЫИГРАЛ',
+                                (SIZE[0] // 2 - 129, SIZE[1] - 200),
+                                pygame.Color('Black'),
+                                load_image('data/buttonsImg/table.jpg'),
+                                pygame.font.Font(None, 26),
+                                (258, 80))
 
     while True:
         for event in pygame.event.get():

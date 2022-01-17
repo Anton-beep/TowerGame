@@ -1,11 +1,14 @@
+"""buttons"""
 import pygame
 from start import *
 from sprites import load_image
 
 
 class Button(pygame.sprite.Sprite):
+    """button"""
     def __init__(self, text, coords, text_col,
-                 button_col=load_image('data/buttonsImg/button1.png'), font=pygame.font.Font(None, 26), size=None):
+                 button_col=load_image('data/buttonsImg/button1.png'),
+                 font=pygame.font.Font(None, 26), size=None):
         super().__init__(SPRITES_GROUPS['BUTTONS'])
         self.text = text
         self.coords = coords
@@ -17,7 +20,7 @@ class Button(pygame.sprite.Sprite):
             self.size = (self.text_surface.get_width() + 20, self.text_surface.get_height() + 12)
         else:
             self.size = size
-        if type(button_col) == pygame.Color:
+        if isinstance(button_col, pygame.Color):
             self.button_col = button_col
             self.image = pygame.Surface(self.size)
             self.image.fill(self.button_col)
@@ -30,10 +33,12 @@ class Button(pygame.sprite.Sprite):
         self.rect.topleft = coords
 
     def set_text(self, new):
+        """sets new text"""
         self.__init__(new, self.coords, self.text_col, self.button_col)
 
 
-class Push_button(Button):
+class PushButton(Button):
+    """push button"""
     def __init__(self, *args):
         super().__init__(*args)
         self.cooldown = 0
@@ -46,34 +51,36 @@ class Push_button(Button):
         return False
 
     def update(self):
+        """updates button and sets cooldown"""
         if self.cooldown > 0:
             self.cooldown -= 1
 
 
-class Toggle_button(Button):
+class ToggleButton(Button):
+    """toggle button"""
     def __init__(self, *args):
         self.args = args
         super().__init__(*args)
         self.cooldown = False
-        self.cooldownTime = 0
+        self.cooldown_time = 0
         self.flag = False
 
     def click(self, coords) -> bool:
-        if self.cooldownTime == 0:
+        """returns True if coords on self.rect or False if not"""
+        if self.cooldown_time == 0:
             if self.rect.collidepoint(coords):
                 self.flag = True
-                if self.flagClick != self.cooldown:
+                if self.flag_click != self.cooldown:
                     if not self.cooldown:
                         self.cooldown = not self.cooldown
                         if len(self.args) >= 4:
                             super().__init__(*list(list(self.args)[:3] +
-                                             [pygame.Color(self.args[3][0] // 2,
-                                                           self.args[3][1] // 2,
-                                                           self.args[3][2] // 2)]))
+                                                   [pygame.Color(self.args[3][0] // 2,
+                                                                 self.args[3][1] // 2,
+                                                                 self.args[3][2] // 2)]))
                         return True
-                    else:
-                        self.cooldown = not self.cooldown
-                        super().__init__(*self.args)
+                    self.cooldown = not self.cooldown
+                    super().__init__(*self.args)
         else:
             return False
 
@@ -84,7 +91,7 @@ class Toggle_button(Button):
 
     def update(self):
         if self.flag:
-            self.flagClick = True
+            self.flag_click = True
         else:
-            self.flagClick = False
+            self.flag_click = False
         self.flag = False

@@ -10,7 +10,7 @@ from start import *
 from boards import Cell, Board
 from sprites import *
 from players import Player
-from buttons import Button, Push_button
+from buttons import Button, PushButton
 
 
 class Entity(pygame.sprite.Sprite):
@@ -107,7 +107,7 @@ class MovingEntity(Entity):
         self.rect = self.rect.move(motion)
         for group in SPRITES_GROUPS.values():
             list_collide = pygame.sprite.spritecollide(self, group, False)
-            list_collide = list(filter(lambda x: not isinstance(x, Push_button), list_collide))
+            list_collide = list(filter(lambda x: not isinstance(x, PushButton), list_collide))
             if list_collide not in [[], [self]]:
                 self.rect = self.rect.move(*tuple(map(lambda x: -x, motion)))
                 # print(list(filter(lambda x: x.player != self.player, list_collide)))

@@ -1,7 +1,9 @@
+"""players"""
 import configparser
 from start import CONFIG
 
 class Player:
+    """player"""
     def __init__(self, team):
         """team can be 'red' or 'blue'"""
         self.team = team
@@ -13,6 +15,7 @@ class Player:
         return hash(self) == hash(other)
 
     def getRussianName(self):
+        """returns russian name"""
         return 'Игрок'
 
 
@@ -20,14 +23,14 @@ class Bot(Player):
     """Must be clever"""
     def __init__(self, *args):
         super().__init__(*args)
-        self.extraEnitities = 0
+        self.extra_enitities = 0
         self.target = None
 
     def spawn_entity(self, group, ent, tower):
         """if returns True -> need to spawn ent else False"""
         if tower.lastAttacker != self.target and\
                 str(type(tower.lastAttacker))[:17] == "<class 'Entities.":
-            self.extraEnitities = 1
+            self.extra_enitities = 1
             self.target = tower.lastAttacker
 
         bot_count = 0
@@ -39,12 +42,13 @@ class Bot(Player):
                 player_count += 1
 
         if tower.money >= ent((0, 0), None, None, False).cost:
-            if self.extraEnitities > 0:
-                self.extraEnitities -= 1
+            if self.extra_enitities > 0:
+                self.extra_enitities -= 1
                 return ent, (self.target, 'playerTower')
-            elif player_count > bot_count:
+            if player_count > bot_count:
                 return ent, ('playerTower',)
         return False
 
     def getRussian(self):
+        """returns russian name"""
         return 'Бот'

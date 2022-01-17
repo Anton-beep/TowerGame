@@ -91,6 +91,7 @@ class Board:
         return int_board
 
     def draw_map(self, start_coords, target_coords, *args):
+        """returns board with wave"""
         collide_rect = args[0].rect.copy()
         exceptions = args
         board_int_copy = self.get_int_board(collide_rect, exceptions)
@@ -109,6 +110,7 @@ class Board:
                                 return board_int_copy
 
     def road_to_coords(self, start_coords, target_coords, *args):
+        """returns road"""
         board_int_copy = self.draw_map(start_coords, target_coords, *args)
         if board_int_copy is None:
             return None
@@ -117,11 +119,11 @@ class Board:
         coords_now = target_coords
         road = [coords_now]
         while board_int_copy[road[-1][0]][road[-1][1]] != 1:
-            x, y = coords_now
+            x_coord, y_coord = coords_now
             neighbors = get_neighbors(coords_now, self.width, self.height)
             for coords in neighbors:
                 if board_int_copy[coords[0]][coords[1]] == \
-                        board_int_copy[x][y] - 1:
+                        board_int_copy[x_coord][y_coord] - 1:
                     road.append(coords)
                     coords_now = coords
                     break
