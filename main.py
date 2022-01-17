@@ -4,7 +4,7 @@ import sys
 import os
 from random import choice
 import pygame
-from PIL import Image
+from PIL import Image, ImageFilter
 from players import *
 from entities import *
 from sprites import *
@@ -78,6 +78,7 @@ def generate_and_set_background_level():
         for j in range(0, LEVEL_RECT.height, CONFIG.getint('window_size', 'CellLevel')):
             BACKGROUND_IMAGE.paste(choice(images), (i, j))
 
+    BACKGROUND_IMAGE = BACKGROUND_IMAGE.filter(ImageFilter.BLUR)
     BACKGROUND_IMAGE.save('data/background.png')
     BACKGROUND = pygame.sprite.Sprite()
     BACKGROUND.image = pygame.image.load('data/background.png')
